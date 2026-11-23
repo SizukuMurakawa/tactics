@@ -1,0 +1,3228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大艦巨砲タクティクス (Big Gun Tactics)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0f172a; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 max-w-7xl mx-auto w-full">
+  <div class="text-center mb-5">
+    <div class="inline-block px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 text-xs font-bold tracking-wider mb-2">
+      NAVAL TACTICS BOARDGAME — 10 NATIONS / 150 SHIPS / 6 STAGES
+    </div>
+    <h1 class="text-3xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-sky-300 via-white to-amber-300 bg-clip-text text-transparent">
+      大艦巨砲タクティクス
+    </h1>
+    <p class="text-slate-400 text-xs sm:text-sm mt-1">潜水空母「伊400＆晴嵐」＆計画超戦艦参戦！日・米・独・英・伊・仏・ソ・豪・西・蘭の10カ国150隻で海戦に挑め！</p>
+  </div>
+
+  <!-- Global Settings Bar -->
+  <div class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl p-4 mb-5 shadow-xl">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-center">
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">1. バトル形式</label>
+        <select id="battle-format-select" onchange="onModeChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-amber-300 focus:outline-none focus:border-amber-400">
+          <option value="standard" selected>⚓ 通常海戦（艦隊決戦）</option>
+          <option value="fortress_single">🏝️ 片側・要塞防衛戦</option>
+          <option value="fortress_dual">🏰 両軍・拠点要塞戦</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">2. 対戦モード</label>
+        <select id="game-mode-select" onchange="onModeChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-sky-400">
+          <option value="1v1_ai" selected>🤖 1vs1 (対AI戦)</option>
+          <option value="1v1_pvp">👥 1vs1 (2人対戦)</option>
+          <option value="1v2_hard">💀 1vs2 ハード (対AI連合)</option>
+          <option value="1v1v1_ai">🔺 1v1v1 (対AI三つ巴)</option>
+          <option value="1v1v1_pvp">👑 1v1v1 (3人乱戦)</option>
+          <option value="2v2_ai">⚔️ 2vs2 (対AI連合・味方操作可)</option>
+          <option value="2v2_pvp">👑 2vs2 (4人連合艦隊戦)</option>
+          <option value="ffa_ai">🔥 1v1v1v1 (対AI四つ巴)</option>
+          <option value="ffa_pvp">👑 1v1v1v1 (4人乱戦)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">3. 編成コスト上限</label>
+        <select id="cost-limit-select" onchange="onSettingsChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-sky-400">
+          <option value="8">8 コスト（速攻・小規模戦）</option>
+          <option value="12" selected>12 コスト（標準艦隊戦）</option>
+          <option value="16">16 コスト（大規模決戦）</option>
+          <option value="20">20 コスト（総力戦・全艦出撃）</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">4. 戦場ステージ</label>
+        <select id="stage-select" onchange="onSettingsChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-sky-400">
+          <option value="standard" selected>🏝️ 標準海域（ソロモン諸島沖）</option>
+          <option value="fortress">🏰 要塞島海域（港湾ドック付）</option>
+          <option value="strait">⛰️ 狭隘海峡（ジブラルタル海峡風）</option>
+          <option value="coral">🪸 サンゴ礁群島（トラック泊地風）</option>
+          <option value="ocean">🌊 大洋決戦（マリアナ沖・外洋）</option>
+          <option value="triangle">🔺 トライアングル群島（三つ巴海域）</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">5. 勝利条件（目標pt）</label>
+        <select id="target-vp-select" onchange="onSettingsChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-sky-400">
+          <option value="5" selected>🏅 5pt 先取（標準決着）</option>
+          <option value="10">🔥 10pt 先取（本格決戦）</option>
+          <option value="15">👑 15pt 先取（総力戦）</option>
+          <option value="0">☠️ 殲滅戦のみ（ポイント決着なし）</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">6. ラウンド数（上限）</label>
+        <select id="max-rounds-select" onchange="onSettingsChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-emerald-300 focus:outline-none focus:border-emerald-400">
+          <option value="6" selected>⚡ 6 ラウンド（標準）</option>
+          <option value="8">🔥 8 ラウンド（本格戦）</option>
+          <option value="10">👑 10 ラウンド（長期戦）</option>
+          <option value="0">♾️ 無制限（決着がつくまで）</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">7. 敵(AI)のターン速度</label>
+        <select id="ai-speed-select" onchange="onSettingsChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-purple-300 focus:outline-none focus:border-purple-400">
+          <option value="950">🐢 ゆっくり（動きをじっくり確認）</option>
+          <option value="500" selected>▶️ 標準（おすすめ）</option>
+          <option value="200">⚡ 高速（テンポ重視）</option>
+          <option value="40">🚀 超高速（一瞬で進行）</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">8. 艦隊の重複編成ルール</label>
+        <select id="duplicate-rule-select" onchange="onSettingsChange()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm font-bold text-cyan-300 focus:outline-none focus:border-cyan-400">
+          <option value="unique" selected>🚫 同名艦不可（1艦隊に各1隻まで）</option>
+          <option value="allow">👯 同名艦OK（量産艦隊モード）</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1">9. 敵(AI)の強さ（難易度）</label>
+        <select id="ai-difficulty-select" onchange="onSettingsChange()" class="w-full bg-slate-800 border border-rose-500/70 rounded-xl px-3 py-2 text-sm font-bold text-rose-200 focus:outline-none focus:border-rose-400">
+          <option value="easy">🌱 入門（かなり弱い・AI命中-1）</option>
+          <option value="casual">🙂 控えめ（やや弱い・集中砲火なし）</option>
+          <option value="normal" selected>⚔️ 標準（バランス調整版・おすすめ）</option>
+          <option value="hard">💀 最強（手加減なし・従来のAI）</option>
+          <option value="lunatic">🔥 鬼神（超ハード・AI命中+1）</option>
+        </select>
+      </div>
+    </div>
+    <div id="mode-description" class="mt-3 text-xs text-sky-300 bg-sky-950/50 border border-sky-800/60 rounded-xl px-3 py-2">
+      🤖 <strong>通常海戦 / 1vs1 (対AI戦)</strong>：北軍（P1・あなた） vs 南軍（P2・AI）の標準海戦です。
+    </div>
+    <div id="ai-difficulty-desc" class="mt-2 text-xs text-rose-200 bg-rose-950/40 border border-rose-800/60 rounded-xl px-3 py-1.5">
+      ⚔️ <strong>AI難易度【標準】</strong>：AIの命中補正なし（プレイヤーと同等）。発艦や集中砲火を適度に抑えたバランスの良い海戦が楽しめます。
+    </div>
+  </div>
+
+  <!-- Fleet Builders Grid -->
+  <div id="players-setup-grid" class="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <!-- Dynamically populated P1..P4 setup panels -->
+  </div>
+
+  <!-- Start Button -->
+  <button onclick="startGame()" class="px-10 py-4 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-black text-lg rounded-2xl shadow-lg shadow-blue-900/50 transition transform hover:scale-105 active:scale-95">
+    ⚓ 抜錨！海戦を開始する
+  </button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="hidden flex-1 flex flex-col lg:flex-row h-screen max-h-screen overflow-hidden">
+  <!-- Left / Top: Board Area -->
+  <div class="flex-1 flex flex-col bg-slate-950 p-2 sm:p-3 min-h-0 overflow-hidden">
+    <!-- Top HUD -->
+    <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 mb-2 shrink-0">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <span id="hud-round" class="px-2.5 py-1 bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-lg text-xs font-black">R1 / 6</span>
+        <span id="hud-weather" class="px-2.5 py-1 bg-sky-500/20 border border-sky-500/40 text-sky-200 rounded-lg text-xs font-bold">☀️ 晴天</span>
+        <span id="hud-turn" class="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-xs font-black">P1のターン</span>
+      </div>
+      <div id="hud-scores" class="flex flex-wrap items-center gap-2 text-xs font-bold">
+        <!-- Scores populated dynamically -->
+      </div>
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button id="hud-ai-diff-btn" onclick="cycleAiDifficulty()" title="敵(AI)の強さ（難易度）を切り替え" class="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-600 rounded-lg text-xs font-bold text-rose-200">⚔️ AI強さ:標準</button>
+        <button id="hud-ai-speed-btn" onclick="cycleAiSpeed()" title="敵(AI)の行動速度を切り替え" class="px-2.5 py-1 bg-purple-950/80 hover:bg-purple-900 border border-purple-600 rounded-lg text-xs font-bold text-purple-200">▶️ AI速度:標準</button>
+        <button onclick="openRulesModal()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-bold text-slate-200">📖 ルール</button>
+        <button onclick="returnToSetup()" class="px-2.5 py-1 bg-rose-950 hover:bg-rose-900 border border-rose-700 rounded-lg text-xs font-bold text-rose-200">🏳️ 編成へ</button>
+      </div>
+    </div>
+
+    <!-- Canvas Container -->
+    <div id="canvas-wrapper" class="flex-1 relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex items-center justify-center min-h-[300px]">
+      <canvas id="game-canvas"></canvas>
+      <!-- Floating Message Banner -->
+      <div id="banner-msg" class="hidden absolute top-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-900/95 border border-amber-400/60 text-amber-200 text-xs sm:text-sm font-black rounded-xl shadow-2xl pointer-events-none z-10 text-center"></div>
+    </div>
+  </div>
+
+  <!-- Right / Bottom: Control Panel & Battle Log -->
+  <div class="w-full lg:w-96 bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col h-[46vh] lg:h-screen max-h-screen overflow-hidden shrink-0">
+    <!-- Selected Unit Inspector -->
+    <div id="unit-inspector" class="p-3 border-b border-slate-800 bg-slate-900/95 overflow-y-auto h-44 sm:h-48 lg:h-60 shrink-0">
+      <div class="text-xs text-slate-400 text-center py-4">盤面の自軍艦船または艦載機をクリックして選択してください</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div id="action-controls" class="p-2.5 border-b border-slate-800 bg-slate-950/60 flex flex-wrap gap-1.5 justify-center shrink-0">
+      <!-- Dynamic action buttons -->
+    </div>
+
+    <!-- Battle Log -->
+    <div class="flex-1 flex flex-col min-h-0 p-2.5 bg-slate-950/40 overflow-hidden">
+      <div class="text-[11px] font-bold text-slate-400 mb-1 flex justify-between shrink-0">
+        <span>📜 戦闘ログ（上が最新）</span>
+        <span id="phase-hint" class="text-sky-400">ユニット選択待ち</span>
+      </div>
+      <div id="battle-log" class="flex-1 overflow-y-auto space-y-1 text-xs font-mono pr-1 min-h-0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL (Plane Launch / Weapon Choice / Rules / Game Over) -->
+<div id="modal-overlay" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div id="modal-box" class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <!-- Dynamic Modal Content -->
+  </div>
+</div>
+
+<script>
+// ==========================================
+// 1. CONSTANTS, AI DIFFICULTY & 10 NATIONS / 150 SHIPS DATABASE
+// ==========================================
+const BOARD_SIZE = 12;
+
+const AI_DIFFICULTY_ORDER = ['easy', 'casual', 'normal', 'hard', 'lunatic'];
+
+const AI_DIFFICULTY_CONFIG = {
+  easy: {
+    id: 'easy',
+    label: '🌱 入門',
+    hudLabel: '🌱 AI強さ:入門',
+    hitMod: -1,
+    launchChance: 0.35,
+    torpChance: 0.50,
+    focusChance: 0.0,
+    waitChance: 0.25,
+    smartMoveChance: 0.40,
+    desc: '🌱 <strong>AI難易度【入門】</strong>：AIの命中判定-1ハンデ。発艦や魚雷を控えめにし、集中砲火や最短進軍も行わないため初心者でも気軽に楽しめます。'
+  },
+  casual: {
+    id: 'casual',
+    label: '🙂 控えめ',
+    hudLabel: '🙂 AI強さ:控えめ',
+    hitMod: -1,
+    launchChance: 0.60,
+    torpChance: 0.75,
+    focusChance: 0.45,
+    waitChance: 0.10,
+    smartMoveChance: 0.65,
+    desc: '🙂 <strong>AI難易度【控えめ】</strong>：AIの命中判定-1ハンデ。集中砲火をあまり行わず、程よい手応えで艦隊戦を楽しめます。'
+  },
+  normal: {
+    id: 'normal',
+    label: '⚔️ 標準',
+    hudLabel: '⚔️ AI強さ:標準',
+    hitMod: 0,
+    launchChance: 0.85,
+    torpChance: 0.90,
+    focusChance: 0.70,
+    waitChance: 0.0,
+    smartMoveChance: 0.85,
+    desc: '⚔️ <strong>AI難易度【標準】</strong>：AIの命中補正なし（プレイヤーと同等）。発艦や集中砲火を適度に抑えたバランスの良い海戦が楽しめます。'
+  },
+  hard: {
+    id: 'hard',
+    label: '💀 最強',
+    hudLabel: '💀 AI強さ:最強',
+    hitMod: 0,
+    launchChance: 1.0,
+    torpChance: 1.0,
+    focusChance: 1.0,
+    waitChance: 0.0,
+    smartMoveChance: 1.0,
+    desc: '💀 <strong>AI難易度【最強】</strong>：手加減なしの全力AI。高価値目標や要塞を100%集中攻撃し、最短ルートで進軍してきます。'
+  },
+  lunatic: {
+    id: 'lunatic',
+    label: '🔥 鬼神',
+    hudLabel: '🔥 AI強さ:鬼神',
+    hitMod: 1,
+    launchChance: 1.0,
+    torpChance: 1.0,
+    focusChance: 1.0,
+    waitChance: 0.0,
+    smartMoveChance: 1.0,
+    desc: '🔥 <strong>AI難易度【鬼神】</strong>：AIの全攻撃命中判定に+1ボーナス！全力発艦・集中砲火を仕掛けてくる超上級者向けモードです。'
+  }
+};
+
+function getAiDiffConfig(diffKey) {
+  const key = diffKey || (gameState ? gameState.aiDifficulty : setupState.aiDifficulty) || 'normal';
+  return AI_DIFFICULTY_CONFIG[key] || AI_DIFFICULTY_CONFIG.normal;
+}
+
+// 8 directions: 0:N, 1:NE, 2:E, 3:SE, 4:S, 5:SW, 6:W, 7:NW
+const DIRS = [
+  { dx: 0, dy: -1, name: '北', icon: '⬆️' },
+  { dx: 1, dy: -1, name: '北東', icon: '↗️' },
+  { dx: 1, dy: 0, name: '東', icon: '➡️' },
+  { dx: 1, dy: 1, name: '南東', icon: '↘️' },
+  { dx: 0, dy: 1, name: '南', icon: '⬇️' },
+  { dx: -1, dy: 1, name: '南西', icon: '↙️' },
+  { dx: -1, dy: 0, name: '西', icon: '⬅️' },
+  { dx: -1, dy: -1, name: '北西', icon: '↖️' }
+];
+
+const NATIONS = {
+  JP: {
+    id: 'JP', name: '🇯🇵 日本', fullName: '大日本帝国海軍',
+    color: '#ef4444', bg: 'bg-red-950/40', border: 'border-red-700/60',
+    passive: 'DDの魚雷ダメ+1(計5)・射程+1(計5マス)'
+  },
+  US: {
+    id: 'US', name: '🇺🇸 アメリカ', fullName: 'アメリカ合衆国海軍',
+    color: '#3b82f6', bg: 'bg-blue-950/40', border: 'border-blue-700/60',
+    passive: '編成コスト上限+1 / 対空砲火4+で命中(通常5+)'
+  },
+  DE: {
+    id: 'DE', name: '🇩🇪 ドイツ', fullName: 'ドイツ海軍',
+    color: '#94a3b8', bg: 'bg-slate-800/60', border: 'border-slate-600/60',
+    passive: '戦艦(BB)・重巡(CA)の被砲撃ダメージ常に-1(最低1)'
+  },
+  UK: {
+    id: 'UK', name: '🇬🇧 イギリス', fullName: 'イギリス王立海軍',
+    color: '#10b981', bg: 'bg-emerald-950/40', border: 'border-emerald-700/60',
+    passive: '毎ターン1隻まで移動時の45度旋回を1回追加可能'
+  },
+  IT: {
+    id: 'IT', name: '🇮🇹 イタリア', fullName: 'イタリア王立海軍',
+    color: '#22c55e', bg: 'bg-green-950/40', border: 'border-green-700/60',
+    passive: '晴天・追い風・夜間戦闘時、全艦の移動力+1'
+  },
+  FR: {
+    id: 'FR', name: '🇫🇷 フランス', fullName: 'フランス国立海軍',
+    color: '#6366f1', bg: 'bg-indigo-950/40', border: 'border-indigo-700/60',
+    passive: '艦首(正面・斜め前)への主砲命中判定+1'
+  },
+  SU: {
+    id: 'SU', name: '🇷🇺 ソ連', fullName: 'ソビエト連邦海軍',
+    color: '#dc2626', bg: 'bg-red-950/50', border: 'border-red-600/60',
+    passive: '荒波・スコール・濃霧の悪天候ペナルティ無効＆近距離(3マス以内)砲撃+1'
+  },
+  AU: {
+    id: 'AU', name: '🇦🇺 オーストラリア', fullName: 'オーストラリア王立海軍',
+    color: '#0284c7', bg: 'bg-sky-950/40', border: 'border-sky-600/60',
+    passive: '英連邦護衛連携：対空砲火4+で命中＆味方大型艦(BB/CA)隣接の艦は被命中-1'
+  },
+  ES: {
+    id: 'ES', name: '🇪🇸 スペイン', fullName: 'スペイン海軍',
+    color: '#ea580c', bg: 'bg-orange-950/40', border: 'border-orange-600/60',
+    passive: '無敵艦隊の底力：HP半分以下の艦は主砲命中+1・ダメージ+1'
+  },
+  NL: {
+    id: 'NL', name: '🇳🇱 オランダ', fullName: 'オランダ王立海軍',
+    color: '#f97316', bg: 'bg-amber-950/40', border: 'border-amber-600/60',
+    passive: 'ジャワ海夜戦戦術：夜間・濃霧・スコール時、全艦移動+1＆魚雷命中+1'
+  }
+};
+
+const SHIPS_DB = [
+  // ================= 🇯🇵 JAPAN =================
+  { id: 'jp_bb1', nation: 'JP', type: 'BB', name: '大和', cost: 5, hp: 12, move: 2, range: 7, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '46cm三連装砲', skillDesc: '主砲ダイスに「6」が1つ以上出たらダメ+1。武蔵隣接で命中+1。' },
+  { id: 'jp_bb2', nation: 'JP', type: 'BB', name: '武蔵', cost: 5, hp: 12, move: 2, range: 7, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '不沈の姉妹艦', skillDesc: '被砲撃ダメ-1(最低1)。大和隣接で主砲ダメ+1。' },
+  { id: 'jp_cv_shinano', nation: 'JP', type: 'CV', name: '信濃', cost: 5, hp: 10, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 6,
+    skillName: '大和型改造・超装甲空母', skillDesc: 'HP10・移動3の超大型空母。あらゆる被ダメージを常に-1(最低1)。' },
+  { id: 'jp_bb3', nation: 'JP', type: 'BB', name: '長門', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'ビッグセブン', skillDesc: '射程4マス以内の敵への主砲攻撃は命中判定+1。' },
+  { id: 'jp_bb4', nation: 'JP', type: 'BB', name: '金剛', cost: 3, hp: 8, move: 3, range: 6, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '高速戦艦', skillDesc: '戦艦ながら移動力3。夜間戦闘時は主砲命中+1。' },
+  { id: 'jp_cv1', nation: 'JP', type: 'CV', name: '赤城', cost: 4, hp: 7, move: 2, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '一航戦の精鋭', skillDesc: '搭載5機。1ターンに2部隊発艦可。加賀隣接で艦載機命中+1。' },
+  { id: 'jp_cv2', nation: 'JP', type: 'CV', name: '加賀', cost: 4, hp: 8, move: 2, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 6,
+    skillName: '大型航空母艦', skillDesc: '搭載6機。爆撃機・攻撃機のダメージ+1。' },
+  { id: 'jp_cv3', nation: 'JP', type: 'CV', name: '瑞鶴', cost: 4, hp: 7, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '幸運の五航戦', skillDesc: '搭載5機・移動3。翔鶴隣接で五航戦シナジー(命中+1)。' },
+  { id: 'jp_cv5', nation: 'JP', type: 'CV', name: '翔鶴', cost: 4, hp: 7, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '五航戦の姉・被害担当艦', skillDesc: '移動3。被爆撃ダメージ-1(最低1)。瑞鶴隣接で五航戦シナジー(ダメ+1)。' },
+  { id: 'jp_cv4', nation: 'JP', type: 'CV', name: '大鳳', cost: 5, hp: 9, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 6,
+    skillName: '装甲空母', skillDesc: '搭載6機。被砲撃・被爆撃ダメージ-1(最低1)。' },
+  { id: 'jp_ca1', nation: 'JP', type: 'CA', name: '高雄', cost: 2, hp: 6, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 5,
+    skillName: '大型艦橋', skillDesc: '移動終了後、追加で45度旋回を1回行える。' },
+  { id: 'jp_ca2', nation: 'JP', type: 'CA', name: '利根', cost: 2, hp: 5, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 5,
+    skillName: '索敵水偵', skillDesc: '周囲3マス以内の潜航潜水艦を発見できる。' },
+  { id: 'jp_cl1', nation: 'JP', type: 'CL', name: '矢矧', cost: 2, hp: 4, move: 4, range: 3, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '水雷戦隊旗艦', skillDesc: '周囲2マス以内の味方駆逐艦は移動+1・命中+1。' },
+  { id: 'jp_cl_kitakami', nation: 'JP', type: 'CL', name: '北上 (重雷装艦)', cost: 3, hp: 5, move: 4, range: 3, guns: 1, torp: 4, torpDmg: 5,
+    skillName: '片舷20門・重雷装斉射', skillDesc: '魚雷4発(ダメ5)搭載！魚雷攻撃の命中判定が常に+1される。' },
+  { id: 'jp_dd1', nation: 'JP', type: 'DD', name: '雪風', cost: 2, hp: 4, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 5,
+    skillName: '奇跡の幸運艦', skillDesc: '1試合に1回、自分への命中判定を無効化(回避)する。' },
+  { id: 'jp_dd2', nation: 'JP', type: 'DD', name: '島風', cost: 2, hp: 3, move: 6, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '重雷装・快速', skillDesc: '移動力6・魚雷3発搭載の超高速駆逐艦。' },
+  { id: 'jp_ss1', nation: 'JP', type: 'SS', name: '伊19', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '伝説の六隻撃沈王', skillDesc: '移動3・魚雷3発(ダメ5)・射程5マス！潜航奇襲の命中+2。' },
+  { id: 'jp_ss_i400', nation: 'JP', type: 'SS', name: '伊400 (潜特型)', cost: 3, hp: 5, move: 3, range: 3, guns: 1, torp: 3, torpDmg: 5, maxPlanes: 3,
+    skillName: '潜水空母・特殊攻撃機『晴嵐』', skillDesc: 'HP5・魚雷3発(射程5)＋特殊攻撃機「晴嵐」3機搭載！浮上時に晴嵐を発艦可能！' },
+
+  // ================= 🇺🇸 USA =================
+  { id: 'us_bb_montana', nation: 'US', type: 'BB', name: 'モンタナ', cost: 5, hp: 12, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '16インチ12門・超弩級斉射', skillDesc: 'HP12・射程6。全門斉射(側面攻撃)時のダメージが常に+1。' },
+  { id: 'us_bb1', nation: 'US', type: 'BB', name: 'アイオワ', cost: 4, hp: 10, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '高速戦艦', skillDesc: '移動力3を持ち、側面回り込みや高速展開が得意。' },
+  { id: 'us_bb2', nation: 'US', type: 'BB', name: 'サウスダコタ', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'レーダー射撃', skillDesc: '濃霧・スコール・夜間戦闘でも命中・射程ペナルティ無効。' },
+  { id: 'us_bb3', nation: 'US', type: 'BB', name: 'ノースカロライナ', cost: 4, hp: 9, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '防空戦艦', skillDesc: '周囲2マス以内の味方艦の対空迎撃ダイスが+1される。' },
+  { id: 'us_bb4', nation: 'US', type: 'BB', name: 'コロラド', cost: 3, hp: 9, move: 2, range: 6, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '16インチ砲', skillDesc: '主砲攻撃のダメージが常に+1される。' },
+  { id: 'us_cv1', nation: 'US', type: 'CV', name: 'エンタープライズ', cost: 5, hp: 8, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 6,
+    skillName: '不死鳥の空母', skillDesc: '搭載6機。撃墜されても1試合に2機まで自動補充される。' },
+  { id: 'us_cv2', nation: 'US', type: 'CV', name: 'エセックス', cost: 4, hp: 8, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 6,
+    skillName: '量産型正規空母', skillDesc: '搭載6機。発艦する艦載機の移動力が常に+1される。' },
+  { id: 'us_cv3', nation: 'US', type: 'CV', name: 'ホーネット', cost: 4, hp: 7, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: 'ドゥーリトル隊', skillDesc: '第1ラウンドに発艦した爆撃機は命中+1・ダメージ+1。' },
+  { id: 'us_ca1', nation: 'US', type: 'CA', name: 'ボルチモア', cost: 3, hp: 6, move: 3, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '強力な対空網', skillDesc: '周囲2マス以内の味方への敵艦載機命中判定-1。' },
+  { id: 'us_ca2', nation: 'US', type: 'CA', name: 'ポートランド', cost: 2, hp: 5, move: 3, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '粘り強い艦体', skillDesc: 'HPが2以下になると主砲の命中判定+1。' },
+  { id: 'us_cl1', nation: 'US', type: 'CL', name: 'アトランタ', cost: 2, hp: 4, move: 4, range: 3, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '防空巡洋艦', skillDesc: '自身・隣接味方への艦載機攻撃を1ラウンド1回無効化。' },
+  { id: 'us_cl2', nation: 'US', type: 'CL', name: 'クリーブランド', cost: 2, hp: 5, move: 4, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '速射6インチ砲', skillDesc: '軽巡ながら主砲2門・射程4を持ち駆逐艦に命中+1。' },
+  { id: 'us_dd1', nation: 'US', type: 'DD', name: 'ジョンストン', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: 'サマール沖の敢闘', skillDesc: '自分よりコストが高い敵艦へ攻撃する際、命中判定+1。' },
+  { id: 'us_dd2', nation: 'US', type: 'DD', name: 'フレッチャー', cost: 2, hp: 4, move: 5, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '万能駆逐艦', skillDesc: '主砲射程3。対空砲火が「3〜6」で命中する。' },
+  { id: 'us_ss1', nation: 'US', type: 'SS', name: 'ガトー', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '太平洋の通商破壊王', skillDesc: '移動3・魚雷3発(ダメ5)。魚雷発射後も4+の確率で潜航を維持！' },
+
+  // ================= 🇩🇪 GERMANY =================
+  { id: 'de_bb_h39', nation: 'DE', type: 'BB', name: 'H39 (フリードリヒ)', cost: 5, hp: 12, move: 2, range: 6, guns: 3, torp: 1, torpDmg: 4,
+    skillName: 'Z計画・超大型戦艦', skillDesc: 'HP12・射程6・魚雷1発。射程4マス以内の近〜中距離主砲命中+1。' },
+  { id: 'de_bb1', nation: 'DE', type: 'BB', name: 'ビスマルク', cost: 5, hp: 11, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '不沈の伝説', skillDesc: 'HP5以下時、1試合に1度だけ受けるダメージを完全無効化。' },
+  { id: 'de_bb2', nation: 'DE', type: 'BB', name: 'ティルピッツ', cost: 5, hp: 11, move: 2, range: 6, guns: 3, torp: 1, torpDmg: 4,
+    skillName: '北の孤独な女王', skillDesc: '戦艦でありながら魚雷1発を搭載し近接戦もこなす。' },
+  { id: 'de_bb3', nation: 'DE', type: 'BB', name: 'シャルンホルスト', cost: 3, hp: 9, move: 3, range: 5, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '通商破壊戦艦', skillDesc: '移動3・魚雷1発搭載。巡洋艦以下への主砲命中+1。' },
+  { id: 'de_bb4', nation: 'DE', type: 'BB', name: 'グナイゼナウ', cost: 3, hp: 9, move: 3, range: 5, guns: 2, torp: 1, torpDmg: 4,
+    skillName: 'シャルンホルスト級姉妹', skillDesc: '移動3・魚雷1発。シャルンホルスト隣接で主砲命中+1＆ダメ+1。' },
+  { id: 'de_cv1', nation: 'DE', type: 'CV', name: 'グラーフ・ツェッペリン', cost: 4, hp: 7, move: 2, range: 2, guns: 2, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '重武装空母', skillDesc: '搭載5機。15cm砲で射程2マス以内の敵に直接砲撃可能。' },
+  { id: 'de_ca1', nation: 'DE', type: 'CA', name: 'プリンツ・オイゲン', cost: 3, hp: 6, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: 'ライン演習作戦', skillDesc: '味方戦艦に隣接している間、自身と隣接戦艦の命中+1。' },
+  { id: 'de_ca2', nation: 'DE', type: 'CA', name: 'アドミラル・ヒッパー', cost: 2, hp: 5, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '重装甲巡洋艦', skillDesc: '魚雷命中判定が+1される。' },
+  { id: 'de_ca3', nation: 'DE', type: 'CA', name: 'グラーフ・シュペー', cost: 3, hp: 6, move: 3, range: 5, guns: 2, torp: 1, torpDmg: 4,
+    skillName: 'ポケット戦艦', skillDesc: '重巡コストで射程5マス・28cm砲による高威力砲撃を持つ。' },
+  { id: 'de_cl1', nation: 'DE', type: 'CL', name: 'エムデン', cost: 2, hp: 4, move: 4, range: 3, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '外周奇襲', skillDesc: 'マップ外周（端の行・列）にいる間、被命中判定-1。' },
+  { id: 'de_cl2', nation: 'DE', type: 'CL', name: 'ライプツィヒ', cost: 2, hp: 4, move: 4, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '水雷軽巡', skillDesc: '軽巡ながら魚雷2発を搭載。爆雷判定+1。' },
+  { id: 'de_dd1', nation: 'DE', type: 'DD', name: 'Z23', cost: 1, hp: 3, move: 5, range: 3, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '大型駆逐艦', skillDesc: '15cm主砲を搭載し、駆逐艦ながら主砲射程が3マス。' },
+  { id: 'de_dd2', nation: 'DE', type: 'DD', name: 'Z1 レーベレヒト', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '水雷戦隊先鋒', skillDesc: '魚雷2発搭載。他の味方駆逐艦隣接で魚雷命中+1。' },
+  { id: 'de_ss1', nation: 'DE', type: 'SS', name: 'U-47', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '群狼作戦・スカパフローの雄', skillDesc: '移動3・魚雷3発。大型艦(BB/CV)への魚雷命中+1＆ダメージ6！' },
+  { id: 'de_ss2', nation: 'DE', type: 'SS', name: 'U-99', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: 'トン数王の隠密操艦', skillDesc: '移動3・魚雷3発(ダメ5)。魚雷発射後も4+の確率で潜航を維持！' },
+
+  // ================= 🇬🇧 UK =================
+  { id: 'uk_bb_vanguard', nation: 'UK', type: 'BB', name: 'ヴァンガード', cost: 5, hp: 11, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '英国最後の超戦艦', skillDesc: 'HP11・移動3・射程6。最新鋭レーダーで遠距離命中+1＆対空4+。' },
+  { id: 'uk_bb1', nation: 'UK', type: 'BB', name: 'キング・ジョージ5世', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '主力艦決戦', skillDesc: '敵の戦艦(BB)を目標にして主砲攻撃する際、命中判定+1。' },
+  { id: 'uk_bb2', nation: 'UK', type: 'BB', name: 'ウォースパイト', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'オールド・レディ', skillDesc: '遠距離(5マス以上)への主砲命中判定が+1される。' },
+  { id: 'uk_bb3', nation: 'UK', type: 'BB', name: 'フッド', cost: 4, hp: 9, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'マイティ・フッド', skillDesc: '移動力3の巡洋戦艦。移動後の主砲攻撃も命中ペナルティなし。' },
+  { id: 'uk_bb4', nation: 'UK', type: 'BB', name: 'レパルス', cost: 3, hp: 8, move: 3, range: 6, guns: 2, torp: 1, torpDmg: 4,
+    skillName: 'Z部隊の高速艦', skillDesc: '移動3・射程6・魚雷1発搭載の万能巡洋戦艦。' },
+  { id: 'uk_bb5', nation: 'UK', type: 'BB', name: 'ネルソン', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '前部集中砲塔', skillDesc: '艦首側(正面・斜め前)への主砲攻撃時、ダイス+1個(上位2個)。' },
+  { id: 'uk_cv1', nation: 'UK', type: 'CV', name: 'アーク・ロイヤル', cost: 4, hp: 7, move: 2, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '舵機破壊の雷撃', skillDesc: '搭載5機。艦載機攻撃が命中した敵の次ターン移動力を半減。' },
+  { id: 'uk_cv2', nation: 'UK', type: 'CV', name: 'イラストリアス', cost: 4, hp: 8, move: 2, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 6,
+    skillName: '装甲飛行甲板', skillDesc: '搭載6機。敵艦載機からの攻撃ダメージを-1(最低1)する。' },
+  { id: 'uk_ca1', nation: 'UK', type: 'CA', name: 'ノーフォーク', cost: 2, hp: 5, move: 3, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: 'レーダー追尾', skillDesc: '濃霧・スコールによる射程・命中ペナルティを一切受けない。' },
+  { id: 'uk_ca2', nation: 'UK', type: 'CA', name: 'エクセター', cost: 2, hp: 5, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: 'ラプラタ沖の勇戦', skillDesc: '魚雷1発搭載。格上の戦艦・重巡への砲撃命中+1。' },
+  { id: 'uk_cl1', nation: 'UK', type: 'CL', name: 'ベルファスト', cost: 2, hp: 4, move: 4, range: 4, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '高性能ソナー', skillDesc: '主砲射程4マス。周囲3マス以内の潜航潜水艦を発見できる。' },
+  { id: 'uk_dd1', nation: 'UK', type: 'DD', name: 'コサック', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '荒天の駆逐艦', skillDesc: '荒波・夜間戦闘などの悪天候ペナルティを受けない。' },
+  { id: 'uk_dd2', nation: 'UK', type: 'DD', name: 'ジャーヴィス', cost: 2, hp: 4, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '不屈の駆逐艦', skillDesc: '魚雷2発搭載。爆雷の命中判定が+1される。' },
+  { id: 'uk_ss1', nation: 'UK', type: 'SS', name: 'トラファルガー', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '浅瀬潜航の忍者', skillDesc: '移動3・魚雷3発(ダメ5)。潜航のまま浅瀬(サンゴ礁)を通過・待機可能！' },
+  { id: 'uk_bb6', nation: 'UK', type: 'BB', name: 'プリンス・オブ・ウェールズ', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'Z部隊旗艦・新鋭戦艦', skillDesc: '対空砲火が「4〜6」で命中。味方巡洋戦艦隣接で命中+1。' },
+
+  // ================= 🇮🇹 ITALY =================
+  { id: 'it_bb_impero', nation: 'IT', type: 'BB', name: 'インペロ', cost: 5, hp: 11, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'ローマ帝国の超戦艦', skillDesc: 'HP11・移動3・射程6の超高速戦艦。晴天・追風時は主砲命中+1。' },
+  { id: 'it_bb1', nation: 'IT', type: 'BB', name: 'ヴィットリオ・ヴェネト', cost: 4, hp: 10, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '高初速38cm砲', skillDesc: '移動3。晴天時の主砲攻撃は命中判定が+1される。' },
+  { id: 'it_bb2', nation: 'IT', type: 'BB', name: 'ローマ', cost: 4, hp: 10, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'リットリオ級最新鋭', skillDesc: '移動3。主砲の最大射程(5〜6マス)でのダメージ+1。' },
+  { id: 'it_bb3', nation: 'IT', type: 'BB', name: 'コンテ・ディ・カブール', cost: 3, hp: 8, move: 3, range: 5, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '近代化改装戦艦', skillDesc: 'コスト3で移動3を持つ機動力重視の戦艦。' },
+  { id: 'it_bb4', nation: 'IT', type: 'BB', name: 'カイオ・ドゥイリオ', cost: 3, hp: 8, move: 2, range: 5, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '地中海防衛戦艦', skillDesc: '自軍陣地側(上半分/下半分)にいる間、被ダメージ-1。' },
+  { id: 'it_cv1', nation: 'IT', type: 'CV', name: 'アクィラ', cost: 4, hp: 7, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '高速改装空母', skillDesc: '搭載5機・移動3。艦載機の発艦・帰還がスムーズ。' },
+  { id: 'it_ca1', nation: 'IT', type: 'CA', name: 'ザラ', cost: 3, hp: 6, move: 3, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '重装甲条約型', skillDesc: '重巡ながら被砲撃ダメージを常に-1(最低1)する。' },
+  { id: 'it_ca2', nation: 'IT', type: 'CA', name: 'ポーラ', cost: 2, hp: 5, move: 3, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '艦隊旗艦設備', skillDesc: '周囲2マス以内のイタリア艦の主砲命中判定+1。' },
+  { id: 'it_ca3', nation: 'IT', type: 'CA', name: 'トレント', cost: 2, hp: 5, move: 4, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '超高速重巡', skillDesc: '重巡ながら移動力4を持ち戦場を駆け回る。' },
+  { id: 'it_cl1', nation: 'IT', type: 'CL', name: 'アッティリオ・レゴロ', cost: 2, hp: 4, move: 5, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: 'カピターニ・ロマーニ級', skillDesc: '移動力5・魚雷2発の超高速大型軽巡洋艦。' },
+  { id: 'it_cl2', nation: 'IT', type: 'CL', name: 'ライモンド・モンテクッコリ', cost: 2, hp: 4, move: 4, range: 4, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '長射程6インチ砲', skillDesc: '軽巡ながら射程4マスを持ち遠距離から牽制可能。' },
+  { id: 'it_dd1', nation: 'IT', type: 'DD', name: 'マエストラーレ', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '地中海の風', skillDesc: '追風・晴天時に移動力がさらに+1される。' },
+  { id: 'it_dd2', nation: 'IT', type: 'DD', name: 'グレカーレ', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '夜戦水雷艇', skillDesc: '夜間戦闘・スコールの時、魚雷命中判定+1。' },
+  { id: 'it_ss1', nation: 'IT', type: 'SS', name: 'シレ', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '人間魚雷マイアーレ', skillDesc: '移動3・魚雷3発(ダメ5)。2マス以内の雷撃は2D6で「4+」で必中！' },
+  { id: 'it_ss2', nation: 'IT', type: 'SS', name: 'ダ・ヴィンチ', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '大西洋の撃沈王', skillDesc: '移動3・魚雷3発。大型艦(BB/CV)への魚雷ダメージ+1(計6)！' },
+
+  // ================= 🇫🇷 FRANCE =================
+  { id: 'fr_bb_alsace', nation: 'FR', type: 'BB', name: 'アルザス', cost: 5, hp: 11, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '38cm四連装3基・超戦艦', skillDesc: 'HP11・移動3・射程6。艦首正面への主砲攻撃は命中+1・ダメ+1。' },
+  { id: 'fr_bb1', nation: 'FR', type: 'BB', name: 'リシュリュー', cost: 4, hp: 10, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '四連装主砲前部集中', skillDesc: '移動3。艦首正面への主砲攻撃はダメージ+1。' },
+  { id: 'fr_bb2', nation: 'FR', type: 'BB', name: 'ジャン・バール', cost: 4, hp: 10, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '未完の巨艦', skillDesc: '移動3。対空砲火が「4〜6」で命中する。' },
+  { id: 'fr_bb3', nation: 'FR', type: 'BB', name: 'ダンケルク', cost: 3, hp: 8, move: 3, range: 5, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '高速巡洋戦艦', skillDesc: 'コスト3・移動3。巡洋艦以下への攻撃時、命中+1。' },
+  { id: 'fr_bb4', nation: 'FR', type: 'BB', name: 'ストラスブール', cost: 3, hp: 9, move: 3, range: 5, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '重装甲改装', skillDesc: 'ダンケルクの姉妹艦。HP9を持ち前線で粘り強く戦う。' },
+  { id: 'fr_bb5', nation: 'FR', type: 'BB', name: 'プロヴァンス', cost: 3, hp: 8, move: 2, range: 6, guns: 2, torp: 0, torpDmg: 0,
+    skillName: 'ブルターニュ級', skillDesc: '射程6マスからの長距離砲撃を得意とする戦艦。' },
+  { id: 'fr_cv1', nation: 'FR', type: 'CV', name: 'ベアルン', cost: 3, hp: 6, move: 2, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 4,
+    skillName: '低コスト空母', skillDesc: '搭載4機。コスト3で編成に組み込みやすい正規空母。' },
+  { id: 'fr_cv2', nation: 'FR', type: 'CV', name: 'ジョッフル', cost: 4, hp: 7, move: 3, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '新鋭艦上機隊', skillDesc: '搭載5機・移動3。艦載機の攻撃命中判定+1。' },
+  { id: 'fr_ca1', nation: 'FR', type: 'CA', name: 'アルジェリー', cost: 3, hp: 6, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '最優秀条約型重巡', skillDesc: 'バランスの良い攻守に加え魚雷1発を搭載。' },
+  { id: 'fr_ca2', nation: 'FR', type: 'CA', name: 'シュフラン', cost: 2, hp: 5, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '機動重巡', skillDesc: '移動後に45度旋回を追加で1回行える。' },
+  { id: 'fr_cl1', nation: 'FR', type: 'CL', name: 'エミール・ベルタン', cost: 2, hp: 4, move: 5, range: 3, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '最速軽巡洋艦', skillDesc: '軽巡でありながら移動力5を誇る高速偵察艦。' },
+  { id: 'fr_dd1', nation: 'FR', type: 'DD', name: 'ル・ファンタスク', cost: 2, hp: 4, move: 7, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '世界最速の大型駆逐艦', skillDesc: '驚異の移動力7＆主砲射程3を持つ大型駆逐艦！' },
+  { id: 'fr_dd2', nation: 'FR', type: 'DD', name: 'モガドール', cost: 2, hp: 4, move: 6, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '超大型駆逐艦', skillDesc: '移動6・射程3・魚雷2発の重武装大型駆逐艦。' },
+  { id: 'fr_ss1', nation: 'FR', type: 'SS', name: 'スルクフ', cost: 2, hp: 4, move: 3, range: 4, guns: 2, torp: 3, torpDmg: 5,
+    skillName: '20.3cm連装砲搭載・潜水巡洋艦', skillDesc: 'HP4・移動3・魚雷3発！浮上中は重巡並みの射程4・主砲2門を撃てる！' },
+  { id: 'fr_ss2', nation: 'FR', type: 'SS', name: 'カサビアンカ', cost: 1, hp: 3, move: 3, range: 2, guns: 1, torp: 2, torpDmg: 5,
+    skillName: '自由フランスの潜航艇', skillDesc: 'コスト1で移動3・魚雷2発(ダメ5)の精鋭潜水艦。' },
+
+  // ================= 🇷🇺 SOVIET UNION =================
+  { id: 'su_bb1', nation: 'SU', type: 'BB', name: 'ソビエツキー・ソユーズ', cost: 5, hp: 12, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '超重装甲・赤い巨艦', skillDesc: 'HP12。被砲撃ダメージを常に-1(最低1)する超重装甲戦艦。' },
+  { id: 'su_bb2', nation: 'SU', type: 'BB', name: 'スターリングラード', cost: 4, hp: 10, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '超大型巡洋戦艦', skillDesc: '移動3・射程6。高初速305mm砲で遠距離(5〜6マス)の命中+1。' },
+  { id: 'su_bb3', nation: 'SU', type: 'BB', name: 'クロンシュタット', cost: 4, hp: 10, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '69型大型巡洋戦艦', skillDesc: '移動3・射程6。巡洋艦以下への主砲ダメージが+1される。' },
+  { id: 'su_cv1', nation: 'SU', type: 'CV', name: 'コストロミティノフ', cost: 4, hp: 7, move: 2, range: 0, guns: 0, torp: 0, torpDmg: 0, maxPlanes: 5,
+    skillName: '北方航空支援', skillDesc: '搭載5機。悪天候(スコール以外)でも艦載機の命中判定+1。' },
+  { id: 'su_ca1', nation: 'SU', type: 'CA', name: 'モスクワ', cost: 3, hp: 6, move: 4, range: 5, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '赤い首都の旗艦', skillDesc: '移動4・射程5。周囲2マスのソ連艦の主砲命中判定+1。' },
+  { id: 'su_ca2', nation: 'SU', type: 'CA', name: 'キーロフ', cost: 3, hp: 6, move: 4, range: 5, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '高初速180mm砲', skillDesc: '移動4・射程5マスを誇る高速重巡洋艦。' },
+  { id: 'su_ca3', nation: 'SU', type: 'CA', name: 'マクシム・ゴーリキー', cost: 3, hp: 6, move: 4, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '赤旗勲章巡洋艦', skillDesc: '移動4・魚雷1発搭載。駆逐艦・軽巡への命中+1。' },
+  { id: 'su_cl1', nation: 'SU', type: 'CL', name: 'クラースヌイ・カフカース', cost: 2, hp: 4, move: 3, range: 4, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '親衛軽巡洋艦', skillDesc: '射程4マス。対空砲火が「4〜6」で命中する。' },
+  { id: 'su_cl2', nation: 'SU', type: 'CL', name: 'チェルヴォナ・ウクライナ', cost: 2, hp: 4, move: 3, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '黒海防衛隊', skillDesc: '軽巡ながら魚雷2発を搭載。爆雷判定+1。' },
+  { id: 'su_dd1', nation: 'SU', type: 'DD', name: 'レニングラード', cost: 2, hp: 4, move: 6, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '大型嚮導駆逐艦', skillDesc: '移動6・射程3・魚雷2発。周囲2マスの味方DDの命中+1。' },
+  { id: 'su_dd2', nation: 'SU', type: 'DD', name: 'タシュケント', cost: 2, hp: 4, move: 6, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '空色の巡洋艦', skillDesc: '移動力6・射程3・魚雷2発の大型高速駆逐艦！' },
+  { id: 'su_dd3', nation: 'SU', type: 'DD', name: 'グレミャーシチイ', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '北極圏の雷撃', skillDesc: 'コスト1で魚雷2発搭載。大型艦への魚雷命中+1。' },
+  { id: 'su_ss1', nation: 'SU', type: 'SS', name: 'S-13', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: 'バルト海の狼', skillDesc: '移動3・魚雷3発。大型艦(BB/CV)への魚雷ダメージが6になる！' },
+  { id: 'su_ss2', nation: 'SU', type: 'SS', name: 'K-21', cost: 2, hp: 3, move: 4, range: 3, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '高速巡洋潜水艦', skillDesc: 'HP3・移動4・魚雷3発！浮上時なら射程3の艦砲射撃も可能。' },
+
+  // ================= 🇦🇺 AUSTRALIA =================
+  { id: 'au_bb1', nation: 'AU', type: 'BB', name: 'オーストラリア(巡戦)', cost: 4, hp: 9, move: 3, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: 'インディファティガブル級', skillDesc: '移動3・射程6の主力巡洋戦艦。遠距離砲撃の命中+1。' },
+  { id: 'au_ca1', nation: 'AU', type: 'CA', name: 'オーストラリア(重巡)', cost: 3, hp: 6, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '豪州艦隊旗艦', skillDesc: '周囲2マス以内のオーストラリア艦の主砲命中判定+1。' },
+  { id: 'au_ca2', nation: 'AU', type: 'CA', name: 'キャンベラ', cost: 3, hp: 6, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: 'サボ島沖の勇戦', skillDesc: '夜間戦闘でも命中・射程ペナルティを受けず、魚雷1発搭載。' },
+  { id: 'au_ca3', nation: 'AU', type: 'CA', name: 'シュロップシャー', cost: 3, hp: 6, move: 3, range: 4, guns: 2, torp: 1, torpDmg: 4,
+    skillName: 'スリガオ海峡夜戦', skillDesc: '魚雷1発搭載。大型艦(BB/CA)への砲撃ダメージ+1。' },
+  { id: 'au_cl1', nation: 'AU', type: 'CL', name: 'パース', cost: 2, hp: 5, move: 4, range: 4, guns: 1, torp: 1, torpDmg: 4,
+    skillName: 'スンダ海峡の激闘', skillDesc: '射程4マス。自分よりコストが高い敵への攻撃命中+1。' },
+  { id: 'au_cl2', nation: 'AU', type: 'CL', name: 'シドニー', cost: 2, hp: 5, move: 4, range: 4, guns: 1, torp: 1, torpDmg: 4,
+    skillName: 'スパダ岬の勝利', skillDesc: '巡洋艦・駆逐艦への主砲命中判定+1。' },
+  { id: 'au_cl3', nation: 'AU', type: 'CL', name: 'ホバート', cost: 2, hp: 4, move: 4, range: 4, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '珊瑚海護衛隊', skillDesc: '周囲2マスの味方空母・戦艦への航空攻撃を1Rに1回軽減(-1)。' },
+  { id: 'au_cl4', nation: 'AU', type: 'CL', name: 'アデレード', cost: 1, hp: 4, move: 3, range: 3, guns: 1, torp: 0, torpDmg: 0,
+    skillName: '低コスト護衛軽巡', skillDesc: 'コスト1で編成できるタフな防衛軽巡洋艦。' },
+  { id: 'au_dd1', nation: 'AU', type: 'DD', name: 'ヴァンパイア', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '屑鉄戦隊の古強者', skillDesc: '爆雷攻撃の命中判定+1。魚雷1発搭載。' },
+  { id: 'au_dd2', nation: 'AU', type: 'DD', name: 'スチュアート', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '地中海の護衛駆逐艦', skillDesc: '隣接する味方大型艦の被命中判定-1。' },
+  { id: 'au_dd3', nation: 'AU', type: 'DD', name: 'ヴォイジャー', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '高速強行輸送', skillDesc: '浅瀬通過時も移動力を消費せず軽快に機動できる。' },
+  { id: 'au_dd4', nation: 'AU', type: 'DD', name: 'アランタ', cost: 2, hp: 4, move: 5, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: 'トライバル級大型DD', skillDesc: '主砲射程3マス・魚雷2発搭載の重武装駆逐艦。' },
+  { id: 'au_dd5', nation: 'AU', type: 'DD', name: 'ワラムンガ', cost: 2, hp: 4, move: 5, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '新鋭トライバル級', skillDesc: '射程3・魚雷2発。対空砲火が「3〜6」で命中する。' },
+  { id: 'au_dd6', nation: 'AU', type: 'DD', name: 'ネピアン', cost: 2, hp: 4, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: 'N級駆逐艦', skillDesc: '魚雷2発搭載。戦艦・空母への魚雷命中判定+1。' },
+
+  // ================= 🇪🇸 SPAIN =================
+  { id: 'es_bb1', nation: 'ES', type: 'BB', name: 'エスパーニャ', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '世界最小の弩級戦艦', skillDesc: '30.5cm主砲3門。全門斉射(側面攻撃)時のダメージ+1。' },
+  { id: 'es_bb2', nation: 'ES', type: 'BB', name: 'アルフォンソ13世', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '王立艦隊主力', skillDesc: '射程4マス以内の敵への主砲攻撃は命中判定+1。' },
+  { id: 'es_bb3', nation: 'ES', type: 'BB', name: 'ハイメ1世', cost: 4, hp: 10, move: 2, range: 6, guns: 3, torp: 0, torpDmg: 0,
+    skillName: '不屈の重装甲', skillDesc: 'HP5以下の時、被砲撃ダメージを常に-1(最低1)する。' },
+  { id: 'es_ca1', nation: 'ES', type: 'CA', name: 'カナリアス', cost: 3, hp: 6, move: 4, range: 5, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '高速条約型重巡', skillDesc: '移動4・射程5・魚雷1発搭載の高速攻撃型重巡！' },
+  { id: 'es_ca2', nation: 'ES', type: 'CA', name: 'バレアレス', cost: 3, hp: 6, move: 4, range: 5, guns: 2, torp: 1, torpDmg: 4,
+    skillName: '防空重巡・パロス岬', skillDesc: '移動4・射程5・魚雷1発。対空砲火が「4〜6」で命中する。' },
+  { id: 'es_cl1', nation: 'ES', type: 'CL', name: 'アルミランテ・セルベラ', cost: 2, hp: 5, move: 4, range: 4, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '高速軽巡洋艦', skillDesc: '移動4・射程4・魚雷2発搭載の万能巡洋艦。' },
+  { id: 'es_cl2', nation: 'ES', type: 'CL', name: 'プリンシペ・アルフォンソ', cost: 2, hp: 5, move: 4, range: 4, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '艦隊先導軽巡', skillDesc: '移動4・魚雷2発。周囲2マスのスペイン艦の移動+1。' },
+  { id: 'es_cl3', nation: 'ES', type: 'CL', name: 'ミゲル・デ・セルバンテス', cost: 2, hp: 5, move: 4, range: 4, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '大西洋哨戒艦', skillDesc: '外洋・晴天時の主砲命中判定+1。' },
+  { id: 'es_cl4', nation: 'ES', type: 'CL', name: 'メンデス・ヌニェス', cost: 2, hp: 4, move: 3, range: 3, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '防空改装軽巡', skillDesc: '対空砲火が「4〜6」で命中する。' },
+  { id: 'es_cl5', nation: 'ES', type: 'CL', name: 'レプブリカ', cost: 1, hp: 4, move: 3, range: 3, guns: 1, torp: 0, torpDmg: 0,
+    skillName: '防衛巡洋艦', skillDesc: 'コスト1で編成できるコスパ重視の巡洋艦。' },
+  { id: 'es_dd1', nation: 'ES', type: 'DD', name: 'チュルカ', cost: 2, hp: 4, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '高速水雷戦隊', skillDesc: '移動5・魚雷2発搭載の精鋭駆逐艦。' },
+  { id: 'es_dd2', nation: 'ES', type: 'DD', name: 'アルカラ・ガリアーノ', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '夜襲雷撃', skillDesc: 'コスト1で魚雷2発搭載。魚雷命中判定+1。' },
+  { id: 'es_dd3', nation: 'ES', type: 'DD', name: 'アルミランテ・フェランディス', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '海峡警備艦', skillDesc: '爆雷攻撃の命中判定+1。' },
+  { id: 'es_ss1', nation: 'ES', type: 'SS', name: 'イサーク・ペラル', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: 'C級潜水艦', skillDesc: '移動3・魚雷3発(ダメ5)。潜航奇襲時の命中判定+2！' },
+
+  // ================= 🇳🇱 NETHERLANDS =================
+  { id: 'nl_bb1', nation: 'NL', type: 'BB', name: 'デ・ゼーヴェン(海防戦艦)', cost: 3, hp: 8, move: 2, range: 5, guns: 2, torp: 0, torpDmg: 0,
+    skillName: '28cm砲海防戦艦', skillDesc: 'コスト3の小型戦艦。浅瀬(サンゴ礁)にも進入可能！' },
+  { id: 'nl_cl1', nation: 'NL', type: 'CL', name: 'デ・ロイテル', cost: 3, hp: 6, move: 4, range: 4, guns: 2, torp: 0, torpDmg: 0,
+    skillName: 'ABDA連合艦隊旗艦', skillDesc: '主砲2門・射程4。周囲2マスのオランダ艦の命中+1・回避+1。' },
+  { id: 'nl_cl2', nation: 'NL', type: 'CL', name: 'ジャワ', cost: 2, hp: 5, move: 4, range: 4, guns: 1, torp: 0, torpDmg: 0,
+    skillName: '東インド艦隊主力', skillDesc: '射程4マス。敵駆逐艦・軽巡への主砲命中判定+1。' },
+  { id: 'nl_cl3', nation: 'NL', type: 'CL', name: 'スマトラ', cost: 2, hp: 5, move: 4, range: 4, guns: 1, torp: 0, torpDmg: 0,
+    skillName: 'ジャワ級姉妹艦', skillDesc: 'ジャワまたはデ・ロイテル隣接で主砲ダメージ+1。' },
+  { id: 'nl_cl4', nation: 'NL', type: 'CL', name: 'トロンプ', cost: 2, hp: 4, move: 5, range: 3, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '嚮導軽巡洋艦', skillDesc: '移動5・魚雷2発搭載。周囲2マスのオランダDDの移動+1。' },
+  { id: 'nl_cl5', nation: 'NL', type: 'CL', name: 'ヤコブ・ファン・ヘームスケルク', cost: 2, hp: 4, move: 4, range: 3, guns: 1, torp: 0, torpDmg: 0,
+    skillName: '防空巡洋艦', skillDesc: '対空砲火が「4〜6」で命中する。' },
+  { id: 'nl_dd1', nation: 'NL', type: 'DD', name: 'ピート・ハイン', cost: 2, hp: 4, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: 'バドゥン海峡の英雄', skillDesc: '魚雷2発搭載。自分よりコストが高い敵への魚雷命中+1。' },
+  { id: 'nl_dd2', nation: 'NL', type: 'DD', name: 'エヴェルトセン', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: 'アドミラーレン級', skillDesc: 'コスト1で魚雷2発搭載。魚雷命中判定+1。' },
+  { id: 'nl_dd3', nation: 'NL', type: 'DD', name: 'コルテノール', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: 'スラバヤ沖の雷撃', skillDesc: '魚雷2発搭載。夜間・濃霧時の魚雷ダメージ+1。' },
+  { id: 'nl_dd4', nation: 'NL', type: 'DD', name: 'ヴァン・ゲント', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '哨戒駆逐艦', skillDesc: '爆雷攻撃の命中判定+1。' },
+  { id: 'nl_dd5', nation: 'NL', type: 'DD', name: 'ヴァン・ネス', cost: 1, hp: 3, move: 5, range: 2, guns: 1, torp: 1, torpDmg: 4,
+    skillName: '護衛駆逐艦', skillDesc: '隣接味方艦への航空攻撃を1Rに1回軽減(-1)。' },
+  { id: 'nl_dd6', nation: 'NL', type: 'DD', name: 'イサーク・スウェールズ', cost: 2, hp: 4, move: 5, range: 2, guns: 1, torp: 2, torpDmg: 4,
+    skillName: '新鋭駆逐艦', skillDesc: '魚雷2発搭載。対空砲火が「4〜6」で命中する。' },
+  { id: 'nl_ss1', nation: 'NL', type: 'SS', name: 'O 16', cost: 2, hp: 3, move: 3, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '東インドの猟犬', skillDesc: '移動3・魚雷3発。大型艦への魚雷ダメージが6になる！' },
+  { id: 'nl_ss2', nation: 'NL', type: 'SS', name: 'K XIV', cost: 2, hp: 3, move: 4, range: 2, guns: 1, torp: 3, torpDmg: 5,
+    skillName: '高速植民地潜水艦', skillDesc: '移動4・魚雷3発！浅瀬(サンゴ礁)にも進入可能！' }
+];
+
+// Plane Templates per Nation (4~7 aircraft per nation)
+const PLANES_BY_NATION = {
+  JP: [
+    { id: 'seiran', name: '特殊攻撃機『晴嵐』', role: 'MULTI', move: 6, dmg: 4, desc: '移動6 / 急降下爆撃＆雷撃(4ダメ・命中+1)＋対空1回無効' },
+    { id: 'zero', name: '零式艦上戦闘機', role: 'FIGHTER', move: 7, dmg: 1, desc: '移動7 / 空戦+1(3+撃墜)' },
+    { id: 'shiden', name: '紫電改 (精鋭艦戦)', role: 'FIGHTER', move: 7, dmg: 2, desc: '移動7 / 空戦+2(2+撃墜)＆DD/SSへ2ダメ' },
+    { id: 'suisei', name: '彗星 (急降下爆撃)', role: 'BOMBER', move: 5, dmg: 3, desc: '移動5 / 急降下爆撃3ダメ(命中+1)' },
+    { id: 'ryusei', name: '流星 (高速艦攻)', role: 'TORPEDO', move: 5, dmg: 4, desc: '移動5 / 高速雷撃4ダメ(命中+1)' },
+    { id: 'tenzan', name: '天山 (重雷撃機)', role: 'TORPEDO', move: 4, dmg: 4, desc: '移動4 / 大型艦(BB/CV)へ雷撃5ダメ' },
+    { id: 'saiun', name: '彩雲 (高速偵察機)', role: 'RECON', move: 9, dmg: 0, desc: '移動9 / 周囲3マスの潜航潜水艦を発見＆味方支援' }
+  ],
+  US: [
+    { id: 'f6f', name: 'F6F ヘルキャット', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 撃墜時5+で生還' },
+    { id: 'f4u', name: 'F4U コルセア', role: 'MULTI', move: 7, dmg: 2, desc: '移動7 / 空戦3+撃墜＆対艦ロケット2ダメ' },
+    { id: 'sbd', name: 'SBD ドーントレス', role: 'BOMBER', move: 5, dmg: 3, desc: '移動5 / 爆撃3ダメ＆対空砲火1回無効' },
+    { id: 'sb2c', name: 'SB2C ヘルダイバー', role: 'BOMBER', move: 5, dmg: 4, desc: '移動5 / 重爆撃4ダメ' },
+    { id: 'tbf', name: 'TBF アベンジャー', role: 'TORPEDO', move: 5, dmg: 4, desc: '移動5 / 2マス手前から雷撃4ダメ' },
+    { id: 'os2u', name: 'キングフィッシャー偵察機', role: 'RECON', move: 7, dmg: 0, desc: '移動7 / 周囲3マスの潜航潜水艦を探知・強制浮上' }
+  ],
+  DE: [
+    { id: 'bf109', name: 'Bf109T メッサーシュミット', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 空戦3+撃墜' },
+    { id: 'me155', name: 'Me155 メッサーシュミット', role: 'FIGHTER', move: 7, dmg: 2, desc: '移動7 / 精鋭艦戦・空戦2+撃墜＆DD/SSへ2ダメ' },
+    { id: 'fw190', name: 'Fw190T 戦闘爆撃機', role: 'MULTI', move: 6, dmg: 3, desc: '移動6 / 空戦も対艦爆撃(3ダメ)もこなす万能機' },
+    { id: 'ju87', name: 'Ju87C スツーカ', role: 'BOMBER', move: 5, dmg: 3, desc: '移動5 / 急降下爆撃3ダメ(命中+1)' },
+    { id: 'fi167', name: 'Fi167 攻撃機', role: 'TORPEDO', move: 4, dmg: 4, desc: '移動4 / 雷撃4ダメ(命中+1)' },
+    { id: 'ar196', name: 'Ar196 水上偵察機', role: 'RECON', move: 7, dmg: 0, desc: '移動7 / 周囲3マスの潜航潜水艦を探知' }
+  ],
+  UK: [
+    { id: 'spitfire', name: 'シーファイア戦闘機', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 空戦3+撃墜' },
+    { id: 'firefly', name: 'ファイアフライ戦闘攻撃機', role: 'MULTI', move: 6, dmg: 3, desc: '移動6 / 空戦＆対艦ロケット3ダメ' },
+    { id: 'barracuda', name: 'バラクーダ爆撃機', role: 'BOMBER', move: 5, dmg: 3, desc: '移動5 / 悪天候ペナルティ無効・3ダメ' },
+    { id: 'swordfish', name: 'ソードフィッシュ', role: 'TORPEDO', move: 4, dmg: 4, desc: '移動4 / 舵機破壊(移動半減)＆対空は6のみ命中' },
+    { id: 'walrus', name: 'ウォーラス偵察飛行艇', role: 'RECON', move: 7, dmg: 0, desc: '移動7 / 周囲3マスの潜航潜水艦を探知' }
+  ],
+  IT: [
+    { id: 're2001', name: 'Re.2001 戦闘機', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 高速迎撃戦闘機' },
+    { id: 'g55', name: 'G.55S 雷撃戦闘機', role: 'MULTI', move: 6, dmg: 3, desc: '移動6 / 空戦も魚雷攻撃(3ダメ)もこなす新鋭機' },
+    { id: 'ju87_it', name: 'Ju87 ピッキアテッロ', role: 'BOMBER', move: 5, dmg: 3, desc: '移動5 / 急降下爆撃3ダメ' },
+    { id: 'sm79', name: 'SM.79 スパルヴィエロ', role: 'TORPEDO', move: 5, dmg: 4, desc: '移動5 / 高速雷撃4ダメ' }
+  ],
+  FR: [
+    { id: 'd520', name: 'D.520 艦上戦闘機', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 標準戦闘機' },
+    { id: 'vg33', name: 'VG.33 軽戦闘爆撃機', role: 'MULTI', move: 6, dmg: 2, desc: '移動6 / 空戦＆爆撃2ダメ' },
+    { id: 'ln401', name: 'LN.401 急降下爆撃機', role: 'BOMBER', move: 5, dmg: 3, desc: '移動5 / 急降下爆撃3ダメ' },
+    { id: 'lat298', name: 'ラテコエール298 雷撃機', role: 'TORPEDO', move: 4, dmg: 4, desc: '移動4 / 水上雷撃4ダメ' }
+  ],
+  SU: [
+    { id: 'yak9', name: 'Yak-9M 艦上戦闘機', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 低高度空戦+1(3+撃墜)' },
+    { id: 'la5', name: 'La-5FN 戦闘爆撃機', role: 'MULTI', move: 6, dmg: 2, desc: '移動6 / 空戦＆対艦爆撃2ダメ' },
+    { id: 'pe2', name: 'Pe-2 急降下爆撃機', role: 'BOMBER', move: 6, dmg: 3, desc: '移動6 / 高速急降下爆撃3ダメ' },
+    { id: 'il2', name: 'Il-2T シュトゥルモヴィク', role: 'TORPEDO', move: 5, dmg: 4, desc: '移動5 / 重装甲で対空砲火1回無効・4ダメ' }
+  ],
+  AU: [
+    { id: 'boomerang', name: 'CAC ブーメラン戦闘機', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 護衛空戦+1(3+撃墜)' },
+    { id: 'beaufighter', name: 'ボーファイター重戦闘機', role: 'MULTI', move: 6, dmg: 3, desc: '移動6 / 20mm機銃＆ロケット3ダメ' },
+    { id: 'wirraway', name: 'ワイラウェイ偵察爆撃機', role: 'RECON', move: 7, dmg: 0, desc: '移動7 / 周囲3マスの潜航潜水艦を探知' },
+    { id: 'beaufort', name: 'ボーフォート雷撃機', role: 'TORPEDO', move: 5, dmg: 4, desc: '移動5 / 雷撃4ダメ' }
+  ],
+  ES: [
+    { id: 'chirri', name: 'CR.32 チリ戦闘機', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 軽快な複葉戦闘機' },
+    { id: 'he112', name: 'He112 戦闘爆撃機', role: 'MULTI', move: 6, dmg: 2, desc: '移動6 / 空戦＆対艦攻撃2ダメ' },
+    { id: 'katiuska', name: 'SB-2 カチューシカ爆撃機', role: 'BOMBER', move: 5, dmg: 3, desc: '移動5 / 高速爆撃3ダメ' },
+    { id: 'he59', name: 'He59 水上雷撃機', role: 'TORPEDO', move: 4, dmg: 4, desc: '移動4 / 雷撃4ダメ' }
+  ],
+  NL: [
+    { id: 'fokker', name: 'フォッカー D.XXI 戦闘機', role: 'FIGHTER', move: 6, dmg: 1, desc: '移動6 / 防空戦闘機' },
+    { id: 'cw21', name: 'CW-21 デーモン迎撃機', role: 'FIGHTER', move: 7, dmg: 1, desc: '移動7 / 高上昇迎撃機(3+撃墜)' },
+    { id: 't8w', name: 'フォッカー T.VIII 偵察雷撃機', role: 'RECON', move: 7, dmg: 0, desc: '移動7 / 周囲3マスの潜航潜水艦を探知' },
+    { id: 't5', name: 'フォッカー T.V 雷撃爆撃機', role: 'TORPEDO', move: 5, dmg: 4, desc: '移動5 / 雷撃4ダメ' }
+  ]
+};
+
+// Weather table (2D6)
+const WEATHER_TABLE = [
+  { min: 2, max: 2, name: '💥 弾薬庫誘爆の危機', desc: '砲撃・雷撃で6ゾロが出たら追加+3ダメージ！' },
+  { min: 3, max: 4, name: '🌧️ スコール（豪雨）', desc: '砲撃射程-2 / 発艦不可 / 魚雷命中+1' },
+  { min: 5, max: 5, name: '💨 追い風', desc: '全艦船の移動力+1マス' },
+  { min: 6, max: 8, name: '☀️ 晴天・穏やかな海', desc: '特殊効果なし（標準海戦）' },
+  { min: 9, max: 9, name: '🌫️ 濃霧発生', desc: '駆逐艦(DD)は2マス以内まで攻撃対象外 / 魚雷+1' },
+  { min: 10, max: 11, name: '🌊 荒波（高波）', desc: 'DD・CL・CAの砲撃命中-1・魚雷命中-2' },
+  { min: 12, max: 12, name: '🌙 夜間戦闘突入', desc: '全艦の射程半分（切り上げ）＆全ダメージ+1！' }
+];
+
+// ==========================================
+// 2. SETUP STATE & UI
+// ==========================================
+let setupState = {
+  battleFormat: 'standard',
+  costLimit: 12,
+  mode: '1v1_ai',
+  stage: 'standard',
+  targetVp: 5,
+  maxRounds: 6,
+  aiSpeed: 500,
+  aiDifficulty: 'normal',
+  allowDuplicateShips: false,
+  players: [
+    { id: 1, name: 'P1 (北軍)', nation: 'JP', isAI: false, team: 'A', fleet: ['jp_bb1', 'jp_cv1', 'jp_dd1', 'jp_ss_i400'] },
+    { id: 2, name: 'P2 (南軍)', nation: 'US', isAI: true,  team: 'B', fleet: ['us_bb1', 'us_cv1', 'us_cl1', 'us_dd1'] },
+    { id: 3, name: 'P3 (味方)', nation: 'UK', isAI: false, team: 'A', fleet: ['uk_bb1', 'uk_bb4', 'uk_cl1', 'uk_dd1'] },
+    { id: 4, name: 'P4 (敵軍)', nation: 'DE', isAI: true,  team: 'B', fleet: ['de_bb1', 'de_ca1', 'de_dd1', 'de_ss1'] }
+  ]
+};
+
+function isSingleFortressMode() { return setupState.battleFormat === 'fortress_single'; }
+function isDualFortressMode() { return setupState.battleFormat === 'fortress_dual'; }
+function isAnyFortressMode() { return isSingleFortressMode() || isDualFortressMode(); }
+
+function getEffectiveCostLimit(pIdx) {
+  const p = setupState.players[pIdx];
+  let limit = setupState.costLimit;
+  if (p.nation === 'US') limit += 1;
+  if (isSingleFortressMode() && p.team === 'B') limit += 3;
+  return limit;
+}
+
+function getFleetCost(fleetIds) {
+  return fleetIds.reduce((sum, id) => {
+    const s = SHIPS_DB.find(x => x.id === id);
+    return sum + (s ? s.cost : 0);
+  }, 0);
+}
+
+function trimFleetToLimit(pIdx) {
+  const limit = getEffectiveCostLimit(pIdx);
+  const p = setupState.players[pIdx];
+  while (getFleetCost(p.fleet) > limit && p.fleet.length > 0) {
+    p.fleet.pop();
+  }
+}
+
+function getActivePlayerCount() {
+  const m = setupState.mode;
+  if (m === '1v1_ai' || m === '1v1_pvp') return 2;
+  if (m === '1v2_hard' || m === '1v1v1_ai' || m === '1v1v1_pvp') return 3;
+  return 4;
+}
+
+function onModeChange() {
+  setupState.battleFormat = document.getElementById('battle-format-select').value;
+  setupState.mode = document.getElementById('game-mode-select').value;
+  const stageEl = document.getElementById('stage-select');
+
+  if (isAnyFortressMode()) {
+    if (setupState.mode === '1v1v1_ai') { setupState.mode = '1v1_ai'; document.getElementById('game-mode-select').value = '1v1_ai'; }
+    if (setupState.mode === '1v1v1_pvp') { setupState.mode = '1v1_pvp'; document.getElementById('game-mode-select').value = '1v1_pvp'; }
+    if (setupState.mode === 'ffa_ai') { setupState.mode = '2v2_ai'; document.getElementById('game-mode-select').value = '2v2_ai'; }
+    if (setupState.mode === 'ffa_pvp') { setupState.mode = '2v2_pvp'; document.getElementById('game-mode-select').value = '2v2_pvp'; }
+    stageEl.value = 'fortress';
+    setupState.stage = 'fortress';
+    if (isSingleFortressMode() && setupState.maxRounds === 0) {
+      setupState.maxRounds = 8;
+      document.getElementById('max-rounds-select').value = '8';
+    }
+  }
+
+  const m = setupState.mode;
+  const descEl = document.getElementById('mode-description');
+  const p = setupState.players;
+
+  if (m === '1v1_ai') {
+    p[0] = { ...p[0], name: 'P1 (北軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (南軍・AI)', isAI: true, team: 'B' };
+  } else if (m === '1v1_pvp') {
+    p[0] = { ...p[0], name: 'P1 (北軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (南軍)', isAI: false, team: 'B' };
+  } else if (m === '1v2_hard') {
+    p[0] = { ...p[0], name: 'P1 (北軍・単独)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (南軍AI①)', isAI: true, team: 'B' };
+    p[2] = { ...p[2], name: 'P3 (南軍AI②)', isAI: true, team: 'B' };
+  } else if (m === '1v1v1_ai') {
+    p[0] = { ...p[0], name: 'P1 (北西軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (北東AI)', isAI: true, team: 'B' };
+    p[2] = { ...p[2], name: 'P3 (南軍AI)', isAI: true, team: 'C' };
+    stageEl.value = 'triangle';
+    setupState.stage = 'triangle';
+  } else if (m === '1v1v1_pvp') {
+    p[0] = { ...p[0], name: 'P1 (北西軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (北東軍)', isAI: false, team: 'B' };
+    p[2] = { ...p[2], name: 'P3 (南軍)', isAI: false, team: 'C' };
+    stageEl.value = 'triangle';
+    setupState.stage = 'triangle';
+  } else if (m === '2v2_ai') {
+    p[0] = { ...p[0], name: 'P1 (北西・A軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (南西・B軍AI)', isAI: true, team: 'B' };
+    p[2] = { ...p[2], name: 'P3 (北東・A軍味方)', isAI: false, team: 'A' };
+    p[3] = { ...p[3], name: 'P4 (南東・B軍AI)', isAI: true, team: 'B' };
+  } else if (m === '2v2_pvp') {
+    p[0] = { ...p[0], name: 'P1 (北西・A軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (南西・B軍)', isAI: false, team: 'B' };
+    p[2] = { ...p[2], name: 'P3 (北東・A軍)', isAI: false, team: 'A' };
+    p[3] = { ...p[3], name: 'P4 (南東・B軍)', isAI: false, team: 'B' };
+  } else if (m === 'ffa_ai') {
+    p[0] = { ...p[0], name: 'P1 (北西軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (北東AI)', isAI: true, team: 'B' };
+    p[2] = { ...p[2], name: 'P3 (南西AI)', isAI: true, team: 'C' };
+    p[3] = { ...p[3], name: 'P4 (南東AI)', isAI: true, team: 'D' };
+  } else if (m === 'ffa_pvp') {
+    p[0] = { ...p[0], name: 'P1 (北西軍)', isAI: false, team: 'A' };
+    p[1] = { ...p[1], name: 'P2 (北東軍)', isAI: false, team: 'B' };
+    p[2] = { ...p[2], name: 'P3 (南西軍)', isAI: false, team: 'C' };
+    p[3] = { ...p[3], name: 'P4 (南東軍)', isAI: false, team: 'D' };
+  }
+
+  let fmtPrefix = '⚓ <strong>通常海戦</strong>';
+  let fmtSuffix = '敵艦隊の撃破または制海権ポイント先取で勝利します。';
+  if (isSingleFortressMode()) {
+    fmtPrefix = '🏝️ <strong>片側・要塞防衛戦</strong>';
+    fmtSuffix = '北軍(A陣営)は<strong>🏰 北司令部要塞(HP25)</strong>を最終ラウンドまで守り抜けば勝利！南軍(B陣営・コスト+3)は要塞破壊を狙います。';
+  } else if (isDualFortressMode()) {
+    fmtPrefix = '🏰 <strong>両軍・拠点要塞戦</strong>';
+    fmtSuffix = '北軍(🏰 HP25)と南軍(🏯 HP25)の双方が要塞を保有！自軍要塞周囲2マスで毎R HP+1修理＆要塞砲援護を受けながら、先に敵要塞を撃破した陣営が勝利！';
+  }
+  descEl.innerHTML = `${fmtPrefix} × <strong>${document.getElementById('game-mode-select').selectedOptions[0].text}</strong>：${fmtSuffix}`;
+
+  for (let i = 0; i < 4; i++) trimFleetToLimit(i);
+  renderSetupPanels();
+}
+
+function onSettingsChange() {
+  setupState.costLimit = parseInt(document.getElementById('cost-limit-select').value, 10);
+  setupState.stage = document.getElementById('stage-select').value;
+  setupState.targetVp = parseInt(document.getElementById('target-vp-select').value, 10);
+  setupState.maxRounds = parseInt(document.getElementById('max-rounds-select').value, 10);
+  setupState.aiSpeed = parseInt(document.getElementById('ai-speed-select').value, 10);
+  setupState.allowDuplicateShips = document.getElementById('duplicate-rule-select').value === 'allow';
+  setupState.aiDifficulty = document.getElementById('ai-difficulty-select').value;
+
+  const diffDescEl = document.getElementById('ai-difficulty-desc');
+  if (diffDescEl) {
+    diffDescEl.innerHTML = getAiDiffConfig(setupState.aiDifficulty).desc;
+  }
+
+  if (isSingleFortressMode() && setupState.maxRounds === 0) {
+    setupState.maxRounds = 8;
+    document.getElementById('max-rounds-select').value = '8';
+    showBanner('🏝️ 片側・要塞防衛戦では防衛期限が必要なため8ラウンドに設定されました');
+  }
+  for (let i = 0; i < 4; i++) {
+    if (!setupState.allowDuplicateShips) {
+      setupState.players[i].fleet = Array.from(new Set(setupState.players[i].fleet));
+    }
+    trimFleetToLimit(i);
+  }
+  renderSetupPanels();
+}
+
+function changePlayerNation(pIdx, nationId) {
+  setupState.players[pIdx].nation = nationId;
+  const nationShips = SHIPS_DB.filter(s => s.nation === nationId);
+  const limit = getEffectiveCostLimit(pIdx);
+  const newFleet = [];
+  let sum = 0;
+  for (const s of nationShips) {
+    if (sum + s.cost <= limit && newFleet.length < 5) {
+      newFleet.push(s.id);
+      sum += s.cost;
+    }
+  }
+  setupState.players[pIdx].fleet = newFleet;
+  renderSetupPanels();
+}
+
+function togglePlayerAI(pIdx) {
+  setupState.players[pIdx].isAI = !setupState.players[pIdx].isAI;
+  renderSetupPanels();
+}
+
+function addShipToFleet(pIdx, shipId) {
+  const p = setupState.players[pIdx];
+  const ship = SHIPS_DB.find(s => s.id === shipId);
+  if (!ship) return;
+  if (!setupState.allowDuplicateShips && p.fleet.includes(shipId)) {
+    showBanner(`🚫 同名艦「${ship.name}」は1艦隊に1隻までしか編入できません！`);
+    return;
+  }
+  const limit = getEffectiveCostLimit(pIdx);
+  if (getFleetCost(p.fleet) + ship.cost > limit) {
+    showBanner('コスト上限を超えています！');
+    return;
+  }
+  p.fleet.push(shipId);
+  renderSetupPanels();
+}
+
+function removeShipFromFleet(pIdx, idxInFleet) {
+  setupState.players[pIdx].fleet.splice(idxInFleet, 1);
+  renderSetupPanels();
+}
+
+function autoFillFleet(pIdx) {
+  const p = setupState.players[pIdx];
+  const limit = getEffectiveCostLimit(pIdx);
+  const pool = SHIPS_DB.filter(s => s.nation === p.nation);
+  p.fleet = [];
+  let guard = 0;
+  while (getFleetCost(p.fleet) < limit && guard < 40) {
+    guard++;
+    const rem = limit - getFleetCost(p.fleet);
+    const candidates = pool.filter(s => s.cost <= rem && (setupState.allowDuplicateShips || !p.fleet.includes(s.id)));
+    if (candidates.length === 0) break;
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    p.fleet.push(pick.id);
+  }
+  renderSetupPanels();
+}
+
+function renderSetupPanels() {
+  const container = document.getElementById('players-setup-grid');
+  const count = getActivePlayerCount();
+  const diffCfg = getAiDiffConfig(setupState.aiDifficulty);
+  container.innerHTML = '';
+
+  for (let i = 0; i < count; i++) {
+    const p = setupState.players[i];
+    const nat = NATIONS[p.nation];
+    const limit = getEffectiveCostLimit(i);
+    const curCost = getFleetCost(p.fleet);
+    const nationShips = SHIPS_DB.filter(s => s.nation === p.nation);
+
+    const teamBadge = p.team === 'A' ? '<span class="px-2 py-0.5 bg-blue-600/30 border border-blue-500 text-blue-200 rounded text-[11px] font-bold">北・A陣営</span>'
+      : p.team === 'B' ? '<span class="px-2 py-0.5 bg-rose-600/30 border border-rose-500 text-rose-200 rounded text-[11px] font-bold">南・B陣営</span>'
+      : p.team === 'C' ? '<span class="px-2 py-0.5 bg-emerald-600/30 border border-emerald-500 text-emerald-200 rounded text-[11px] font-bold">C陣営</span>'
+      : '<span class="px-2 py-0.5 bg-amber-600/30 border border-amber-500 text-amber-200 rounded text-[11px] font-bold">D陣営</span>';
+
+    const card = document.createElement('div');
+    card.className = `rounded-2xl border ${nat.border} ${nat.bg} p-4 flex flex-col gap-3 shadow-lg`;
+
+    let nationOptions = '';
+    for (const k of Object.keys(NATIONS)) {
+      nationOptions += `<option value="${k}" ${p.nation === k ? 'selected' : ''}>${NATIONS[k].name}</option>`;
+    }
+
+    let fleetChips = '';
+    p.fleet.forEach((sid, idx) => {
+      const s = SHIPS_DB.find(x => x.id === sid);
+      if (!s) return;
+      fleetChips += `
+        <button onclick="removeShipFromFleet(${i}, ${idx})" title="クリックで解除"
+          class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-900/90 hover:bg-rose-950 border border-slate-600 hover:border-rose-500 rounded-lg text-xs font-bold text-white transition">
+          <span class="text-amber-300">[${s.type}]</span> ${s.name} <span class="text-slate-400">(${s.cost})</span> <span class="text-rose-400 ml-0.5">×</span>
+        </button>`;
+    });
+
+    let rosterRows = '';
+    nationShips.forEach(s => {
+      const alreadyInFleet = !setupState.allowDuplicateShips && p.fleet.includes(s.id);
+      const canAfford = !alreadyInFleet && (curCost + s.cost <= limit);
+      const btnText = alreadyInFleet ? '編入済' : '+編入';
+      rosterRows += `
+        <div class="flex items-center justify-between gap-2 bg-slate-950/70 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="px-1.5 py-0.5 bg-slate-800 text-amber-300 font-black rounded text-[10px]">${s.type}</span>
+              <span class="font-bold text-white truncate">${s.name}</span>
+              <span class="text-[11px] text-sky-300 font-bold">コスト:${s.cost}</span>
+              <span class="text-[10px] text-slate-400">HP:${s.hp} 移:${s.move} 射:${s.range} 砲:${s.guns}${s.torp ? ` 魚:${s.torp}` : ''}${s.maxPlanes ? ` 機:${s.maxPlanes}` : ''}</span>
+            </div>
+            <div class="text-[10px] text-slate-400 truncate mt-0.5">${s.skillName}：${s.skillDesc}</div>
+          </div>
+          <button onclick="addShipToFleet(${i}, '${s.id}')" ${canAfford ? '' : 'disabled'}
+            class="shrink-0 px-2.5 py-1.5 rounded-lg font-bold text-xs ${canAfford ? 'bg-sky-600 hover:bg-sky-500 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}">
+            ${btnText}
+          </button>
+        </div>`;
+    });
+
+    card.innerHTML = `
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-base font-black text-white">${p.name}</span>
+          ${teamBadge}
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="togglePlayerAI(${i})" class="px-2.5 py-1 rounded-lg text-xs font-bold border ${p.isAI ? 'bg-purple-950/80 border-purple-500 text-purple-200' : 'bg-emerald-950/80 border-emerald-500 text-emerald-200'}">
+            ${p.isAI ? `🤖 AI操作 (${diffCfg.label})` : '👤 プレイヤー操作'}
+          </button>
+          <select onchange="changePlayerNation(${i}, this.value)" class="bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1 text-xs font-bold text-white">
+            ${nationOptions}
+          </select>
+        </div>
+      </div>
+
+      <div class="text-[11px] text-amber-200/90 bg-slate-950/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
+        <strong>国家特性：</strong>${nat.passive}
+      </div>
+
+      <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-bold text-slate-300">出撃艦隊 (${p.fleet.length}隻) — コスト: <strong class="${curCost > limit ? 'text-rose-400' : 'text-emerald-400'}">${curCost} / ${limit}</strong></span>
+          <button onclick="autoFillFleet(${i})" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-sky-300 rounded">🎲 おまかせ編成</button>
+        </div>
+        <div class="flex flex-wrap gap-1.5 min-h-[28px]">
+          ${fleetChips || '<span class="text-xs text-slate-500">下のリストから艦船を編入してください</span>'}
+        </div>
+      </div>
+
+      <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+        ${rosterRows}
+      </div>
+    `;
+    container.appendChild(card);
+  }
+}
+
+// ==========================================
+// 3. GAME ENGINE STATE & MAP GENERATION
+// ==========================================
+let gameState = null;
+
+// Grid cell types: 0 = Deep Sea, 1 = Island, 2 = Shoal (浅瀬), 3 = Control Point [★]
+function generateMap(stage) {
+  const g = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
+  g[5][5] = 3; g[5][6] = 3; g[6][5] = 3; g[6][6] = 3;
+
+  if (stage === 'standard') {
+    const islands = [[3,3],[3,4],[8,7],[8,8],[4,8],[7,3]];
+    islands.forEach(([r,c]) => g[r][c] = 1);
+    const shoals = [[3,5],[8,6],[5,3],[6,8]];
+    shoals.forEach(([r,c]) => g[r][c] = 2);
+  } else if (stage === 'fortress') {
+    const islands = [[3,2],[3,3],[3,8],[3,9],[8,2],[8,3],[8,8],[8,9],[5,3],[6,8]];
+    islands.forEach(([r,c]) => g[r][c] = 1);
+    const shoals = [[4,4],[4,7],[7,4],[7,7]];
+    shoals.forEach(([r,c]) => g[r][c] = 2);
+  } else if (stage === 'strait') {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (c < 4 || c > 7) {
+        g[5][c] = 1;
+        g[6][c] = 1;
+      }
+    }
+    g[5][4] = 2; g[6][7] = 2;
+  } else if (stage === 'coral') {
+    const islands = [[2,4],[2,7],[4,2],[4,9],[7,2],[7,9],[9,4],[9,7]];
+    islands.forEach(([r,c]) => g[r][c] = 1);
+    const shoals = [[3,4],[3,5],[3,6],[3,7],[8,4],[8,5],[8,6],[8,7],[5,4],[6,7]];
+    shoals.forEach(([r,c]) => g[r][c] = 2);
+  } else if (stage === 'triangle') {
+    const islands = [[4,5],[4,6],[7,4],[7,7]];
+    islands.forEach(([r,c]) => g[r][c] = 1);
+    const shoals = [[5,4],[5,7],[7,5],[7,6]];
+    shoals.forEach(([r,c]) => g[r][c] = 2);
+  }
+  return g;
+}
+
+function getSpawnCoords(pIdx, count, mode) {
+  if (mode === '1v1_ai' || mode === '1v1_pvp') {
+    if (pIdx === 0) return [[1,2],[1,3],[1,8],[1,9],[2,3],[2,4],[2,7],[2,8]];
+    return [[10,2],[10,3],[10,8],[10,9],[9,3],[9,4],[9,7],[9,8]];
+  }
+  if (mode === '1v2_hard') {
+    if (pIdx === 0) return [[1,2],[1,3],[1,8],[1,9],[2,3],[2,4],[2,7],[2,8]];
+    if (pIdx === 1) return [[10,1],[10,2],[10,3],[9,2],[9,3],[9,4]];
+    return [[10,8],[10,9],[10,10],[9,7],[9,8],[9,9]];
+  }
+  if (mode === '1v1v1_ai' || mode === '1v1v1_pvp') {
+    if (pIdx === 0) return [[1,1],[1,2],[2,1],[2,2],[1,3],[2,3]];
+    if (pIdx === 1) return [[1,10],[1,9],[2,10],[2,9],[1,8],[2,8]];
+    return [[10,4],[10,7],[9,4],[9,5],[9,6],[9,7]];
+  }
+  if (pIdx === 0) return [[1,1],[1,2],[2,1],[2,2],[1,3],[2,3]];
+  if (pIdx === 1) return [[1,10],[1,9],[2,10],[2,9],[1,8],[2,8]];
+  if (pIdx === 2) return [[10,1],[10,2],[9,1],[9,2],[10,3],[9,3]];
+  return [[10,10],[10,9],[9,10],[9,9],[10,8],[9,8]];
+}
+
+function getInitialDir(pIdx, mode) {
+  if (mode === '1v1_ai' || mode === '1v1_pvp') return pIdx === 0 ? 4 : 0;
+  if (mode === '1v2_hard') return pIdx === 0 ? 4 : 0;
+  if (mode === '1v1v1_ai' || mode === '1v1v1_pvp') {
+    if (pIdx === 0) return 3;
+    if (pIdx === 1) return 5;
+    return 0;
+  }
+  if (pIdx === 0) return 3;
+  if (pIdx === 1) return 5;
+  if (pIdx === 2) return 1;
+  return 7;
+}
+
+function startGame() {
+  const count = getActivePlayerCount();
+  for (let i = 0; i < count; i++) {
+    if (setupState.players[i].fleet.length === 0) {
+      showBanner(`${setupState.players[i].name} の艦隊が0隻です！1隻以上編入してください。`);
+      return;
+    }
+  }
+
+  const activePlayers = [];
+  const units = [];
+  let uidCounter = 1;
+  const mapGrid = generateMap(setupState.stage);
+
+  if (isAnyFortressMode()) {
+    mapGrid[1][5] = 0;
+    mapGrid[1][6] = 1;
+    units.push({
+      uid: 'fortress_north',
+      ownerId: 1,
+      team: 'A',
+      nation: setupState.players[0].nation,
+      isPlane: false,
+      isFortress: true,
+      shipId: 'fortress_hq',
+      name: '北司令部要塞',
+      type: 'HQ',
+      cost: 10,
+      hp: 25,
+      maxHp: 25,
+      move: 0,
+      range: 3,
+      guns: 2,
+      torp: 0,
+      maxTorp: 0,
+      torpDmg: 0,
+      skillName: '沿岸要塞砲＆港湾ドック',
+      skillDesc: 'R終了時に周囲3マスの敵へ自動砲撃(2ダメ)＆周囲2マスの味方艦をHP+1修理。',
+      x: 5,
+      y: 1,
+      dir: 4,
+      submerged: false,
+      acted: true
+    });
+
+    if (isDualFortressMode()) {
+      mapGrid[10][5] = 0;
+      mapGrid[10][6] = 1;
+      const southOwner = setupState.players.slice(0, count).find(p => p.team === 'B') || setupState.players[1];
+      units.push({
+        uid: 'fortress_south',
+        ownerId: southOwner.id,
+        team: 'B',
+        nation: southOwner.nation,
+        isPlane: false,
+        isFortress: true,
+        shipId: 'fortress_hq',
+        name: '南司令部要塞',
+        type: 'HQ',
+        cost: 10,
+        hp: 25,
+        maxHp: 25,
+        move: 0,
+        range: 3,
+        guns: 2,
+        torp: 0,
+        maxTorp: 0,
+        torpDmg: 0,
+        skillName: '沿岸要塞砲＆港湾ドック',
+        skillDesc: 'R終了時に周囲3マスの敵へ自動砲撃(2ダメ)＆周囲2マスの味方艦をHP+1修理。',
+        x: 5,
+        y: 10,
+        dir: 0,
+        submerged: false,
+        acted: true
+      });
+    }
+  }
+
+  function findFreeSpawnTile(preferredCoords, fallbackRow) {
+    for (const [ry, cx] of preferredCoords) {
+      if (ry >= 0 && ry < BOARD_SIZE && cx >= 0 && cx < BOARD_SIZE) {
+        if (mapGrid[ry][cx] !== 1 && !units.some(u => !u.isPlane && u.x === cx && u.y === ry)) {
+          return [ry, cx];
+        }
+      }
+    }
+    for (let dist = 0; dist < BOARD_SIZE; dist++) {
+      for (const rOffset of [dist, -dist]) {
+        const ry = fallbackRow + rOffset;
+        if (ry < 0 || ry >= BOARD_SIZE) continue;
+        for (let cx = 0; cx < BOARD_SIZE; cx++) {
+          if (mapGrid[ry][cx] !== 1 && !units.some(u => !u.isPlane && u.x === cx && u.y === ry)) {
+            return [ry, cx];
+          }
+        }
+      }
+    }
+    return [fallbackRow, 0];
+  }
+
+  for (let i = 0; i < count; i++) {
+    const sp = setupState.players[i];
+    activePlayers.push({
+      id: sp.id,
+      name: sp.name,
+      nation: sp.nation,
+      isAI: sp.isAI,
+      team: sp.team,
+      vp: 0,
+      ukTurnUsedThisTurn: false
+    });
+
+    const spawns = getSpawnCoords(i, count, setupState.mode);
+    const dir = getInitialDir(i, setupState.mode);
+    const fallbackRow = spawns[0] ? spawns[0][0] : (sp.team === 'A' ? 1 : 10);
+
+    sp.fleet.forEach((shipId, idx) => {
+      const tmpl = SHIPS_DB.find(s => s.id === shipId);
+      if (!tmpl) return;
+      const orderedSpawns = [...spawns.slice(idx % spawns.length), ...spawns.slice(0, idx % spawns.length)];
+      const coord = findFreeSpawnTile(orderedSpawns, fallbackRow);
+      units.push({
+        uid: `u_${uidCounter++}`,
+        ownerId: sp.id,
+        team: sp.team,
+        nation: sp.nation,
+        isPlane: false,
+        shipId: tmpl.id,
+        name: tmpl.name,
+        type: tmpl.type,
+        cost: tmpl.cost,
+        hp: tmpl.hp,
+        maxHp: tmpl.hp,
+        move: tmpl.move,
+        range: tmpl.range,
+        guns: tmpl.guns,
+        torp: tmpl.torp,
+        maxTorp: tmpl.torp,
+        torpDmg: tmpl.torpDmg,
+        maxPlanes: tmpl.maxPlanes || 0,
+        planesRemaining: tmpl.maxPlanes || 0,
+        skillName: tmpl.skillName,
+        skillDesc: tmpl.skillDesc,
+        x: coord[1],
+        y: coord[0],
+        dir: dir,
+        submerged: tmpl.type === 'SS',
+        acted: false,
+        movedThisTurn: false,
+        stepsMoved: 0,
+        grounded: false,
+        rudderDamaged: false,
+        luckyUsed: false,
+        bismarckUsed: false,
+        aaShieldUsed: false,
+        entRevives: tmpl.id === 'us_cv1' ? 2 : 0,
+        launchedThisTurn: 0
+      });
+    });
+  }
+
+  const maxRounds = setupState.maxRounds;
+  const roundLimitLabel = maxRounds > 0 ? `最大${maxRounds}R` : 'ラウンド無制限';
+  const diffCfg = getAiDiffConfig(setupState.aiDifficulty);
+
+  gameState = {
+    round: 1,
+    maxRounds: maxRounds,
+    targetVp: isAnyFortressMode() ? 0 : setupState.targetVp,
+    battleFormat: setupState.battleFormat,
+    mode: setupState.mode,
+    stage: setupState.stage,
+    aiSpeed: setupState.aiSpeed,
+    aiDifficulty: setupState.aiDifficulty,
+    grid: mapGrid,
+    players: activePlayers,
+    turnPlayerIdx: 0,
+    weather: WEATHER_TABLE[3],
+    units: units,
+    selectedUid: null,
+    modeAction: 'MOVE',
+    gameOver: false
+  };
+
+  if (isAnyFortressMode()) {
+    gameState.grid[1][6] = 1;
+    if (isDualFortressMode()) {
+      gameState.grid[10][6] = 1;
+    }
+  }
+
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('game-screen').classList.remove('hidden');
+  document.getElementById('battle-log').innerHTML = '';
+
+  rollWeather();
+  const vpRuleText = isSingleFortressMode()
+    ? `🏰 北司令部要塞(HP25)を${maxRounds}ラウンド防衛すれば北軍勝利！`
+    : (isDualFortressMode()
+        ? `🏰 先に敵の司令部要塞(HP25)を破壊した陣営が勝利（${roundLimitLabel}）！`
+        : (gameState.targetVp > 0 ? `${gameState.targetVp}pt先取（${roundLimitLabel}）` : `敵艦隊全滅（${roundLimitLabel}）`));
+  addLog(`⚓ 海戦開始！勝利条件: ${vpRuleText} / AI強さ: ${diffCfg.label} / ステージ: ${document.getElementById('stage-select').selectedOptions[0].text}`, 'text-amber-300 font-bold');
+
+  resizeCanvas();
+  startPlayerTurn();
+}
+
+function rollWeather() {
+  const d1 = Math.floor(Math.random() * 6) + 1;
+  const d2 = Math.floor(Math.random() * 6) + 1;
+  const sum = d1 + d2;
+  const w = WEATHER_TABLE.find(x => sum >= x.min && sum <= x.max) || WEATHER_TABLE[3];
+  gameState.weather = w;
+  addLog(`🎲 [R${gameState.round} 天候判定: 2D6=${sum}] ${w.name} — ${w.desc}`, 'text-sky-300');
+
+  if (w.name.includes('スコール')) {
+    const planes = gameState.units.filter(u => u.isPlane && u.hp > 0);
+    if (planes.length > 0) {
+      planes.forEach(pl => {
+        const cv = gameState.units.find(u => u.uid === pl.parentCvUid && u.hp > 0);
+        if (cv) cv.planesRemaining = Math.min(cv.maxPlanes, cv.planesRemaining + 1);
+      });
+      gameState.units = gameState.units.filter(u => !u.isPlane);
+      addLog(`🌧️ スコール発生により全艦載機が母艦へ緊急帰還しました！`, 'text-sky-200');
+    }
+  }
+}
+
+function getCurrentPlayer() {
+  return gameState.players[gameState.turnPlayerIdx];
+}
+
+function startPlayerTurn() {
+  if (gameState.gameOver) return;
+  gameState.units = gameState.units.filter(u => u.hp > 0);
+  const p = getCurrentPlayer();
+  p.ukTurnUsedThisTurn = false;
+
+  gameState.units.forEach(u => {
+    if (u.ownerId === p.id) {
+      u.acted = u.isFortress ? true : false;
+      u.movedThisTurn = false;
+      u.stepsMoved = 0;
+      u.aaShieldUsed = false;
+      u.launchedThisTurn = 0;
+      if (u.type === 'SS' && !u.submerged && u.hp > 0) {
+        u.submerged = true;
+        addLog(`🫧 ${u.name} が再び潜航状態に移行しました。`, 'text-cyan-300');
+      }
+      if (u.grounded) {
+        u.grounded = false;
+        u.acted = true;
+        addLog(`⚠️ ${u.name} は浅瀬から離礁作業中のため今ターン行動不能！`, 'text-amber-400');
+      }
+    }
+  });
+
+  const firstReady = gameState.units.find(u => u.ownerId === p.id && !u.acted && !u.isFortress && u.hp > 0);
+  gameState.selectedUid = firstReady ? firstReady.uid : null;
+  gameState.modeAction = 'MOVE';
+
+  updateHUD();
+  renderInspector();
+  renderActionControls();
+  drawCanvas();
+
+  if (p.isAI) {
+    setTimeout(() => runAITurnStep(), gameState.aiSpeed);
+  }
+}
+
+function advanceTurn() {
+  if (gameState.gameOver) return;
+  gameState.units = gameState.units.filter(u => u.hp > 0);
+  checkVictoryConditions();
+  if (gameState.gameOver) return;
+
+  const p = getCurrentPlayer();
+  const nextUnit = gameState.units.find(u => u.ownerId === p.id && !u.acted && !u.isFortress && u.hp > 0);
+  if (nextUnit) {
+    gameState.selectedUid = nextUnit.uid;
+    updateHUD();
+    renderInspector();
+    renderActionControls();
+    drawCanvas();
+    if (p.isAI) {
+      setTimeout(() => runAITurnStep(), gameState.aiSpeed);
+    }
+    return;
+  }
+
+  gameState.turnPlayerIdx++;
+  if (gameState.turnPlayerIdx >= gameState.players.length) {
+    gameState.turnPlayerIdx = 0;
+    endRound();
+  } else {
+    startPlayerTurn();
+  }
+}
+
+function endRound() {
+  if (gameState.gameOver) return;
+  gameState.units = gameState.units.filter(u => u.hp > 0);
+
+  // Fortress Coastal Guns & Harbor Dock Repairs
+  const fortresses = gameState.units.filter(u => u.isFortress && u.hp > 0);
+  fortresses.forEach(hq => {
+    gameState.units.forEach(ally => {
+      if (!ally.isPlane && !ally.isFortress && ally.team === hq.team && ally.hp > 0 && ally.hp < ally.maxHp) {
+        const d = Math.max(Math.abs(ally.x - hq.x), Math.abs(ally.y - hq.y));
+        if (d <= 2) {
+          ally.hp = Math.min(ally.maxHp, ally.hp + 1);
+          addLog(`🔧 [${hq.name} 港湾ドック] ${ally.name} の耐久が1回復 (${ally.hp}/${ally.maxHp})`, 'text-emerald-300');
+        }
+      }
+    });
+
+    const nearbyEnemies = gameState.units.filter(en => !en.isPlane && en.team !== hq.team && en.hp > 0 && !en.submerged && Math.max(Math.abs(en.x - hq.x), Math.abs(en.y - hq.y)) <= 3);
+    if (nearbyEnemies.length > 0) {
+      const target = nearbyEnemies[0];
+      target.hp = Math.max(0, target.hp - 2);
+      addLog(`🏰 [${hq.name} 沿岸砲] 接近した ${target.name} に援護砲撃 2ダメージ！(残HP:${target.hp})`, 'text-amber-300 font-bold');
+      if (target.hp <= 0) handleUnitSunk(hq, target);
+    }
+  });
+
+  // Control Point VP scoring in standard mode
+  if (!isAnyFortressMode() && gameState.targetVp > 0) {
+    const teamShipsInCenter = {};
+    gameState.units.forEach(u => {
+      if (!u.isPlane && !u.isFortress && u.hp > 0 && !u.submerged && gameState.grid[u.y][u.x] === 3) {
+        teamShipsInCenter[u.team] = (teamShipsInCenter[u.team] || 0) + 1;
+      }
+    });
+    const teamsPresent = Object.keys(teamShipsInCenter);
+    if (teamsPresent.length === 1) {
+      const winTeam = teamsPresent[0];
+      gameState.players.forEach(pl => {
+        if (pl.team === winTeam) pl.vp += 1;
+      });
+      addLog(`🏅 [制海権確保] ${winTeam}陣営が中央海域[★]を単独制圧！+1pt獲得！`, 'text-amber-300 font-bold');
+    }
+  }
+
+  // Planes return to carriers/subs at end of round
+  const planes = gameState.units.filter(u => u.isPlane && u.hp > 0);
+  if (planes.length > 0) {
+    planes.forEach(pl => {
+      const cv = gameState.units.find(u => u.uid === pl.parentCvUid && u.hp > 0);
+      if (cv) {
+        cv.planesRemaining = Math.min(cv.maxPlanes, cv.planesRemaining + 1);
+      }
+    });
+    gameState.units = gameState.units.filter(u => !u.isPlane);
+    addLog(`🛬 ラウンド終了に伴い、飛行中の艦載機が母艦へ帰還しました。`, 'text-sky-300');
+  }
+
+  // Reset rudder damage
+  gameState.units.forEach(u => { u.rudderDamaged = false; });
+
+  checkVictoryConditions();
+  if (gameState.gameOver) return;
+
+  if (gameState.maxRounds > 0 && gameState.round >= gameState.maxRounds) {
+    finishGameByRounds();
+    return;
+  }
+
+  gameState.round++;
+  rollWeather();
+  startPlayerTurn();
+}
+
+function finishGameByRounds() {
+  gameState.gameOver = true;
+  if (isSingleFortressMode()) {
+    const northHq = gameState.units.find(u => u.uid === 'fortress_north');
+    if (northHq && northHq.hp > 0) {
+      showGameOverModal('🏆 北軍（防衛側）の勝利！', `最終ラウンド(${gameState.maxRounds}R)まで北司令部要塞(残HP:${northHq.hp}/25)を守り抜きました！`);
+    } else {
+      showGameOverModal('💥 南軍（強襲側）の勝利！', '北司令部要塞を陥落させました！');
+    }
+    return;
+  }
+  if (isDualFortressMode()) {
+    const northHq = gameState.units.find(u => u.uid === 'fortress_north');
+    const southHq = gameState.units.find(u => u.uid === 'fortress_south');
+    const nHp = northHq ? northHq.hp : 0;
+    const sHp = southHq ? southHq.hp : 0;
+    if (nHp > sHp) {
+      showGameOverModal('🏆 北軍（A陣営）の勝利！', `最終ラウンド終了時の要塞耐久判定（北要塞 HP:${nHp} vs 南要塞 HP:${sHp}）で北軍が勝利しました！`);
+    } else if (sHp > nHp) {
+      showGameOverModal('🏆 南軍（B陣営）の勝利！', `最終ラウンド終了時の要塞耐久判定（南要塞 HP:${sHp} vs 北要塞 HP:${nHp}）で南軍が勝利しました！`);
+    } else {
+      showGameOverModal('⚖️ 引き分け！', `両軍の司令部要塞耐久が同値（HP:${nHp}）で時間切れとなりました。`);
+    }
+    return;
+  }
+
+  const sorted = [...gameState.players].sort((a, b) => b.vp - a.vp);
+  const top = sorted[0];
+  showGameOverModal(`🏆 ${top.team}陣営 (${top.name}) の勝利！`, `最終ラウンド(${gameState.maxRounds}R)終了！獲得ポイント ${top.vp}pt で勝利を収めました！`);
+}
+
+function checkVictoryConditions() {
+  if (gameState.gameOver) return;
+
+  if (isSingleFortressMode()) {
+    const northHq = gameState.units.find(u => u.uid === 'fortress_north');
+    if (!northHq || northHq.hp <= 0) {
+      gameState.gameOver = true;
+      showGameOverModal('💥 南軍（強襲側）の勝利！', '北司令部要塞が陥落しました！');
+      return;
+    }
+    const southShips = gameState.units.filter(u => !u.isPlane && !u.isFortress && u.team === 'B' && u.hp > 0);
+    if (southShips.length === 0) {
+      gameState.gameOver = true;
+      showGameOverModal('🏆 北軍（防衛側）の勝利！', '南軍の強襲艦隊を全滅させ、要塞を守り抜きました！');
+      return;
+    }
+    return;
+  }
+
+  if (isDualFortressMode()) {
+    const northHq = gameState.units.find(u => u.uid === 'fortress_north');
+    const southHq = gameState.units.find(u => u.uid === 'fortress_south');
+    if (!northHq || northHq.hp <= 0) {
+      gameState.gameOver = true;
+      showGameOverModal('🏆 南軍（B陣営）の勝利！', '北司令部要塞を撃破・陥落させました！');
+      return;
+    }
+    if (!southHq || southHq.hp <= 0) {
+      gameState.gameOver = true;
+      showGameOverModal('🏆 北軍（A陣営）の勝利！', '南司令部要塞を撃破・陥落させました！');
+      return;
+    }
+    return;
+  }
+
+  // Standard Mode: check target VP
+  if (gameState.targetVp > 0) {
+    const vpWinner = gameState.players.find(p => p.vp >= gameState.targetVp);
+    if (vpWinner) {
+      gameState.gameOver = true;
+      showGameOverModal(`🏆 ${vpWinner.team}陣営 (${vpWinner.name}) の勝利！`, `目標ポイント（${gameState.targetVp}pt）に到達しました！`);
+      return;
+    }
+  }
+
+  // Check fleet annihilation
+  const aliveTeams = new Set();
+  gameState.units.forEach(u => {
+    if (!u.isPlane && !u.isFortress && u.hp > 0) aliveTeams.add(u.team);
+  });
+  if (aliveTeams.size === 1) {
+    const winTeam = Array.from(aliveTeams)[0];
+    const winner = gameState.players.find(p => p.team === winTeam);
+    gameState.gameOver = true;
+    showGameOverModal(`🏆 ${winTeam}陣営 (${winner ? winner.name : ''}) の完全勝利！`, '敵艦隊をすべて撃沈しました！');
+  } else if (aliveTeams.size === 0) {
+    gameState.gameOver = true;
+    showGameOverModal('⚖️ 両軍全滅・引き分け', '壮絶な相打ちとなりました。');
+  }
+}
+
+// ==========================================
+// 4. MOVEMENT, LINE OF SIGHT & COMBAT CALCULATION
+// ==========================================
+function getEffectiveMove(u) {
+  if (u.isFortress) return 0;
+  let m = u.move;
+  if (u.isPlane) {
+    if (u.parentCvUid) {
+      const cv = gameState.units.find(x => x.uid === u.parentCvUid);
+      if (cv && cv.shipId === 'us_cv2') m += 1;
+    }
+    return m;
+  }
+  const w = gameState.weather.name;
+  if (w.includes('追い風')) m += 1;
+  if (u.nation === 'IT' && (w.includes('晴天') || w.includes('追い風') || w.includes('夜間'))) m += 1;
+  if (u.nation === 'NL' && (w.includes('夜間') || w.includes('濃霧') || w.includes('スコール'))) m += 1;
+  if (u.shipId === 'it_dd1' && (w.includes('追い風') || w.includes('晴天'))) m += 1;
+
+  // Aura buffs
+  gameState.units.forEach(ally => {
+    if (ally.uid !== u.uid && ally.team === u.team && ally.hp > 0 && !ally.isPlane) {
+      const dist = Math.max(Math.abs(ally.x - u.x), Math.abs(ally.y - u.y));
+      if (dist <= 2) {
+        if (ally.shipId === 'jp_cl1' && u.type === 'DD') m += 1;
+        if (ally.shipId === 'es_cl2' && u.nation === 'ES') m += 1;
+        if (ally.shipId === 'nl_cl4' && u.nation === 'NL' && u.type === 'DD') m += 1;
+      }
+    }
+  });
+
+  if (u.type === 'SS' && !u.submerged) m += 1;
+  if (u.rudderDamaged) m = Math.max(1, Math.floor(m / 2));
+  return m;
+}
+
+function getEffectiveRange(u) {
+  if (u.isPlane) return 1;
+  if (u.type === 'SS' && u.submerged) return 0;
+  let r = u.range;
+  if (r <= 0) return 0;
+  const w = gameState.weather.name;
+  const ignoreWeather = u.nation === 'SU' || u.shipId === 'us_bb2' || u.shipId === 'uk_ca1' || u.shipId === 'uk_dd1' || u.shipId === 'au_ca2';
+  if (!ignoreWeather) {
+    if (w.includes('スコール')) r = Math.max(1, r - 2);
+    if (w.includes('夜間')) r = Math.max(1, Math.ceil(r / 2));
+  }
+  return r;
+}
+
+function getEffectiveTorpRange(u) {
+  let r = 4;
+  if (u.nation === 'JP' && u.type === 'DD') r = 5;
+  if (u.shipId === 'jp_ss1' || u.shipId === 'jp_ss_i400') r = 5;
+  return r;
+}
+
+function hasLineOfSight(x1, y1, x2, y2) {
+  const dx = Math.abs(x2 - x1);
+  const dy = Math.abs(y2 - y1);
+  const steps = Math.max(dx, dy);
+  if (steps <= 1) return true;
+  for (let i = 1; i < steps; i++) {
+    const cx = Math.round(x1 + ((x2 - x1) * i) / steps);
+    const cy = Math.round(y1 + ((y2 - y1) * i) / steps);
+    if (gameState.grid[cy][cx] === 1) return false;
+  }
+  return true;
+}
+
+// Step-by-step 1-tile movement options (including 1-tile astern / reverse maneuver!)
+function getStepMoveOptions(u) {
+  if (!u || u.acted || u.isFortress || u.hp <= 0) return [];
+  const maxSteps = getEffectiveMove(u);
+  const used = u.stepsMoved || 0;
+  const rem = maxSteps - used;
+  if (rem <= 0) return [];
+
+  const results = [];
+  if (u.isPlane) {
+    for (let dir = 0; dir < 8; dir++) {
+      const nx = u.x + DIRS[dir].dx;
+      const ny = u.y + DIRS[dir].dy;
+      if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) continue;
+      const samePlane = gameState.units.find(o => o.hp > 0 && o.isPlane && o.team === u.team && o.x === nx && o.y === ny);
+      if (!samePlane) {
+        results.push({ x: nx, y: ny, dir: dir, stepCost: 1, isReverse: false });
+      }
+    }
+    return results;
+  }
+
+  // Forward & 45-degree turns
+  for (const turn of [-1, 0, 1]) {
+    const ndir = (u.dir + turn + 8) % 8;
+    const nx = u.x + DIRS[ndir].dx;
+    const ny = u.y + DIRS[ndir].dy;
+    if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) continue;
+    const cell = gameState.grid[ny][nx];
+    if (cell === 1) continue;
+
+    const blocker = gameState.units.find(o => !o.isPlane && o.hp > 0 && o.x === nx && o.y === ny);
+    if (blocker) continue;
+
+    const isShoal = cell === 2;
+    const canPassShoal = u.type === 'DD' || u.shipId === 'uk_ss1' || u.shipId === 'nl_bb1' || u.shipId === 'nl_ss2';
+    const stepCost = (isShoal && !canPassShoal) ? rem : 1;
+    results.push({ x: nx, y: ny, dir: ndir, stepCost, isReverse: false });
+  }
+
+  // Astern (1 tile directly backward, keeping heading)
+  const backDir = (u.dir + 4) % 8;
+  const bx = u.x + DIRS[backDir].dx;
+  const by = u.y + DIRS[backDir].dy;
+  if (bx >= 0 && bx < BOARD_SIZE && by >= 0 && by < BOARD_SIZE) {
+    const cell = gameState.grid[by][bx];
+    const blocker = gameState.units.find(o => !o.isPlane && o.hp > 0 && o.x === bx && o.y === by);
+    if (cell !== 1 && !blocker) {
+      const isShoal = cell === 2;
+      const canPassShoal = u.type === 'DD' || u.shipId === 'uk_ss1' || u.shipId === 'nl_bb1' || u.shipId === 'nl_ss2';
+      const stepCost = (isShoal && !canPassShoal) ? rem : 1;
+      results.push({ x: bx, y: by, dir: u.dir, stepCost, isReverse: true });
+    }
+  }
+
+  return results;
+}
+
+function getValidMoves(u) {
+  if (!u || u.acted || u.isFortress || u.hp <= 0) return [];
+  const maxSteps = getEffectiveMove(u);
+  const results = [];
+
+  if (u.isPlane) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (x === u.x && y === u.y) continue;
+        const dist = Math.max(Math.abs(x - u.x), Math.abs(y - u.y));
+        if (dist <= maxSteps) {
+          const samePlane = gameState.units.find(o => o.hp > 0 && o.isPlane && o.team === u.team && o.x === x && o.y === y);
+          if (!samePlane) results.push({ x, y, dir: u.dir, path: [{ x, y }] });
+        }
+      }
+    }
+    return results;
+  }
+
+  const visited = new Map();
+  const queue = [{ x: u.x, y: u.y, dir: u.dir, steps: 0, path: [] }];
+  visited.set(`${u.x},${u.y},${u.dir}`, 0);
+
+  while (queue.length > 0) {
+    const cur = queue.shift();
+    if (cur.steps > 0) {
+      results.push({ x: cur.x, y: cur.y, dir: cur.dir, path: cur.path });
+    }
+    if (cur.steps >= maxSteps) continue;
+
+    for (const turn of [-1, 0, 1]) {
+      const ndir = (cur.dir + turn + 8) % 8;
+      const nx = cur.x + DIRS[ndir].dx;
+      const ny = cur.y + DIRS[ndir].dy;
+      if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) continue;
+      const cell = gameState.grid[ny][nx];
+      if (cell === 1) continue;
+
+      const blocker = gameState.units.find(o => !o.isPlane && o.hp > 0 && o.x === nx && o.y === ny);
+      if (blocker) continue;
+
+      const isShoal = cell === 2;
+      const canPassShoal = u.type === 'DD' || u.shipId === 'uk_ss1' || u.shipId === 'nl_bb1' || u.shipId === 'nl_ss2';
+      const nextSteps = isShoal && !canPassShoal ? maxSteps : cur.steps + 1;
+      const key = `${nx},${ny},${ndir}`;
+      if (!visited.has(key) || visited.get(key) > nextSteps) {
+        visited.set(key, nextSteps);
+        queue.push({ x: nx, y: ny, dir: ndir, steps: nextSteps, path: [...cur.path, { x: nx, y: ny }] });
+      }
+    }
+  }
+
+  const byCoord = new Map();
+  for (const r of results) {
+    const ck = `${r.x},${r.y}`;
+    if (!byCoord.has(ck)) byCoord.set(ck, r);
+  }
+  return Array.from(byCoord.values());
+}
+
+function getAttackableTargets(u) {
+  if (!u || u.acted || u.isFortress || u.hp <= 0) return [];
+  const targets = [];
+  const w = gameState.weather.name;
+
+  if (u.isPlane) {
+    if (u.role === 'RECON') return [];
+    gameState.units.forEach(en => {
+      if (en.team === u.team || en.hp <= 0) return;
+      const dist = Math.max(Math.abs(en.x - u.x), Math.abs(en.y - u.y));
+      if (en.isPlane) {
+        if ((u.role === 'FIGHTER' || u.role === 'MULTI') && dist <= 1) {
+          targets.push({ unit: en, weapon: 'DOGFIGHT', label: '✈️ 空戦迎撃' });
+        }
+      } else {
+        if (en.submerged) return;
+        const maxAirDist = u.planeId === 'tbf' ? 2 : 1;
+        if (dist <= maxAirDist) {
+          if (u.role === 'BOMBER' || u.role === 'TORPEDO' || u.role === 'MULTI' || u.planeId === 'shiden' || u.planeId === 'me155') {
+            targets.push({ unit: en, weapon: 'AIRSTRIKE', label: '💣 航空攻撃' });
+          }
+        }
+      }
+    });
+    return targets;
+  }
+
+  const gunRange = getEffectiveRange(u);
+  const torpRange = getEffectiveTorpRange(u);
+
+  gameState.units.forEach(en => {
+    if (en.isPlane || en.team === u.team || en.hp <= 0) return;
+    const dist = Math.max(Math.abs(en.x - u.x), Math.abs(en.y - u.y));
+
+    if (en.submerged) {
+      if ((u.type === 'DD' || u.type === 'CL') && dist <= 2) {
+        targets.push({ unit: en, weapon: 'DEPTH_CHARGE', label: '💣 爆雷投下' });
+      }
+      return;
+    }
+
+    if (w.includes('濃霧') && en.type === 'DD' && dist > 2) return;
+
+    if (gunRange > 0 && dist <= gunRange && hasLineOfSight(u.x, u.y, en.x, en.y)) {
+      targets.push({ unit: en, weapon: 'GUN', label: '💥 主砲斉射' });
+    }
+
+    if (u.torp > 0 && dist <= torpRange && hasLineOfSight(u.x, u.y, en.x, en.y)) {
+      targets.push({ unit: en, weapon: 'TORPEDO', label: '🔱 魚雷発射' });
+    }
+  });
+
+  return targets;
+}
+
+function getRelativeAngleType(attacker, defender) {
+  const vx = attacker.x - defender.x;
+  const vy = attacker.y - defender.y;
+  const f = DIRS[defender.dir];
+  const dot = vx * f.dx + vy * f.dy;
+  const lenV = Math.hypot(vx, vy) || 1;
+  const lenF = Math.hypot(f.dx, f.dy) || 1;
+  const cos = dot / (lenV * lenF);
+  if (cos > 0.5) return 'BOW';
+  if (cos < -0.5) return 'STERN';
+  return 'BROADSIDE';
+}
+
+function executeMove(u, moveObj) {
+  u.x = moveObj.x;
+  u.y = moveObj.y;
+  u.dir = moveObj.dir;
+  u.stepsMoved = (u.stepsMoved || 0) + (moveObj.stepCost || 1);
+  const maxSteps = getEffectiveMove(u);
+  if (u.stepsMoved >= maxSteps) {
+    u.movedThisTurn = true;
+  }
+
+  if (!u.isPlane) {
+    const cell = gameState.grid[u.y][u.x];
+    const canPassShoal = u.type === 'DD' || u.shipId === 'uk_ss1' || u.shipId === 'nl_bb1' || u.shipId === 'nl_ss2';
+    if (cell === 2 && !canPassShoal) {
+      u.grounded = true;
+      u.movedThisTurn = true;
+      u.acted = true;
+      addLog(`⚠️ ${u.name} が浅瀬に座礁！次ターン行動不能になります！`, 'text-amber-400 font-bold');
+    }
+
+    if (u.type === 'DD' || u.type === 'CL' || u.shipId === 'jp_ca2' || u.shipId === 'uk_cl1') {
+      const detectRange = (u.shipId === 'jp_ca2' || u.shipId === 'uk_cl1') ? 3 : 2;
+      gameState.units.forEach(en => {
+        if (!en.isPlane && en.team !== u.team && en.submerged && en.hp > 0) {
+          const d = Math.max(Math.abs(en.x - u.x), Math.abs(en.y - u.y));
+          if (d <= detectRange) {
+            en.submerged = false;
+            addLog(`📡 [ソナー探知] ${u.name} が潜航中の ${en.name} を発見・強制浮上させた！`, 'text-cyan-300 font-bold');
+          }
+        }
+      });
+    }
+  } else if (u.role === 'RECON') {
+    gameState.units.forEach(en => {
+      if (!en.isPlane && en.team !== u.team && en.submerged && en.hp > 0) {
+        const d = Math.max(Math.abs(en.x - u.x), Math.abs(en.y - u.y));
+        if (d <= 3) {
+          en.submerged = false;
+          addLog(`📡 [${u.name} 航空偵察] 潜航中の ${en.name} を発見・強制浮上させた！`, 'text-cyan-300 font-bold');
+        }
+      }
+    });
+    if (u.movedThisTurn) {
+      addLog(`📡 ${u.name} が偵察飛行を完了しました。`, 'text-sky-300');
+      u.acted = true;
+      advanceTurn();
+      return;
+    }
+  }
+
+  const remSteps = Math.max(0, maxSteps - u.stepsMoved);
+  const moveVerb = moveObj.isReverse ? 'へ後進（微速後退）' : 'へ1マス前進';
+  addLog(`🚢 ${u.name} が (${u.x + 1}, ${u.y + 1}) ${moveVerb}（残移動:${remSteps}）。`, 'text-slate-300');
+
+  if (u.acted) {
+    advanceTurn();
+  } else {
+    renderInspector();
+    renderActionControls();
+    drawCanvas();
+  }
+}
+
+function executeAttack(attacker, attackInfo) {
+  const target = attackInfo.unit;
+  if (!attacker || !target || attacker.hp <= 0 || target.hp <= 0) {
+    if (attacker) attacker.acted = true;
+    advanceTurn();
+    return;
+  }
+  const weapon = attackInfo.weapon;
+  const dist = Math.max(Math.abs(target.x - attacker.x), Math.abs(target.y - attacker.y));
+  const w = gameState.weather.name;
+
+  // Check if attacker belongs to an AI player and apply difficulty hit modifier
+  const attackerOwner = gameState.players.find(p => p.id === attacker.ownerId);
+  const aiHitMod = (attackerOwner && attackerOwner.isAI) ? getAiDiffConfig().hitMod : 0;
+
+  if (target.shipId === 'jp_dd1' && !target.luckyUsed) {
+    target.luckyUsed = true;
+    addLog(`🍀 [奇跡の幸運艦] ${target.name} が敵の攻撃を紙一重で完全回避！`, 'text-emerald-300 font-bold');
+    attacker.acted = true;
+    advanceTurn();
+    return;
+  }
+
+  if (weapon === 'GUN') {
+    let needed = dist <= 2 ? 3 : dist <= 4 ? 4 : 5;
+    let mod = aiHitMod;
+
+    if (attacker.movedThisTurn && attacker.shipId !== 'uk_bb3') mod -= 1;
+    if (w.includes('荒波') && ['DD','CL','CA'].includes(attacker.type) && attacker.nation !== 'SU') mod -= 1;
+
+    if (attacker.nation === 'SU' && dist <= 3) mod += 1;
+    if (attacker.nation === 'ES' && attacker.hp <= attacker.maxHp / 2) mod += 1;
+    const angle = getRelativeAngleType(attacker, target);
+    if (attacker.nation === 'FR' && angle === 'BOW') mod += 1;
+
+    if (attacker.shipId === 'jp_bb3' && dist <= 4) mod += 1;
+    if (attacker.shipId === 'jp_bb4' && w.includes('夜間')) mod += 1;
+    if (attacker.shipId === 'us_ca2' && attacker.hp <= 2) mod += 1;
+    if (attacker.shipId === 'us_cl2' && target.type === 'DD') mod += 1;
+    if (attacker.shipId === 'us_dd1' && target.cost > attacker.cost) mod += 1;
+    if (attacker.shipId === 'de_bb_h39' && dist <= 4) mod += 1;
+    if (attacker.shipId === 'de_bb3' && ['CA','CL','DD','SS'].includes(target.type)) mod += 1;
+    if (attacker.shipId === 'uk_bb_vanguard' && dist >= 5) mod += 1;
+    if (attacker.shipId === 'uk_bb1' && target.type === 'BB') mod += 1;
+    if (attacker.shipId === 'uk_bb2' && dist >= 5) mod += 1;
+    if (attacker.shipId === 'uk_ca2' && ['BB','CA'].includes(target.type)) mod += 1;
+    if (attacker.shipId === 'it_bb_impero' && (w.includes('晴天') || w.includes('追い風'))) mod += 1;
+    if (attacker.shipId === 'it_bb1' && w.includes('晴天')) mod += 1;
+    if (attacker.shipId === 'fr_bb_alsace' && angle === 'BOW') mod += 1;
+    if (attacker.shipId === 'fr_bb3' && ['CA','CL','DD','SS'].includes(target.type)) mod += 1;
+    if (attacker.shipId === 'su_bb2' && dist >= 5) mod += 1;
+    if (attacker.shipId === 'su_ca3' && ['DD','CL'].includes(target.type)) mod += 1;
+    if (attacker.shipId === 'au_bb1' && dist >= 5) mod += 1;
+    if (attacker.shipId === 'au_cl1' && target.cost > attacker.cost) mod += 1;
+    if (attacker.shipId === 'au_cl2' && ['CA','CL','DD'].includes(target.type)) mod += 1;
+    if (attacker.shipId === 'es_bb2' && dist <= 4) mod += 1;
+    if (attacker.shipId === 'es_cl3' && w.includes('晴天')) mod += 1;
+    if (attacker.shipId === 'nl_cl2' && ['DD','CL'].includes(target.type)) mod += 1;
+
+    gameState.units.forEach(ally => {
+      if (ally.uid !== attacker.uid && ally.team === attacker.team && ally.hp > 0 && !ally.isPlane) {
+        const d = Math.max(Math.abs(ally.x - attacker.x), Math.abs(ally.y - attacker.y));
+        if (d <= 1) {
+          if (attacker.shipId === 'jp_bb1' && ally.shipId === 'jp_bb2') mod += 1;
+          if (attacker.shipId === 'de_bb4' && ally.shipId === 'de_bb3') mod += 1;
+          if (ally.shipId === 'de_ca1' && attacker.type === 'BB') mod += 1;
+          if (attacker.shipId === 'de_ca1' && ally.type === 'BB') mod += 1;
+          if (attacker.shipId === 'uk_bb6' && ally.type === 'BB' && ally.move >= 3) mod += 1;
+        }
+        if (d <= 2) {
+          if (ally.shipId === 'jp_cl1' && attacker.type === 'DD') mod += 1;
+          if (ally.shipId === 'it_ca2' && attacker.nation === 'IT') mod += 1;
+          if (ally.shipId === 'su_ca1' && attacker.nation === 'SU') mod += 1;
+          if (ally.shipId === 'su_dd1' && attacker.type === 'DD') mod += 1;
+          if (ally.shipId === 'au_ca1' && attacker.nation === 'AU') mod += 1;
+          if (ally.shipId === 'nl_cl1' && attacker.nation === 'NL') mod += 1;
+        }
+      }
+    });
+
+    if (target.shipId === 'de_cl1' && (target.x === 0 || target.x === 11 || target.y === 0 || target.y === 11)) mod -= 1;
+    gameState.units.forEach(tAlly => {
+      if (tAlly.uid !== target.uid && tAlly.team === target.team && tAlly.hp > 0 && !tAlly.isPlane) {
+        const d = Math.max(Math.abs(tAlly.x - target.x), Math.abs(tAlly.y - target.y));
+        if (d <= 1 && tAlly.nation === 'AU' && ['BB','CA'].includes(target.type)) mod -= 1;
+        if (d <= 1 && tAlly.shipId === 'au_dd2' && ['BB','CA'].includes(target.type)) mod -= 1;
+        if (d <= 2 && tAlly.shipId === 'nl_cl1' && target.nation === 'NL') mod -= 1;
+      }
+    });
+
+    const rolls = [];
+    let hits = 0;
+    let hasSix = false;
+    for (let i = 0; i < attacker.guns; i++) {
+      const r = Math.floor(Math.random() * 6) + 1;
+      rolls.push(r);
+      if (r === 6) hasSix = true;
+      if (r + mod >= needed) hits++;
+    }
+
+    let dmg = hits;
+    if (hits > 0) {
+      if (angle === 'BROADSIDE') dmg += 1;
+      if (w.includes('夜間')) dmg += 1;
+      if (w.includes('弾薬庫') && rolls.filter(r => r === 6).length >= 2) dmg += 3;
+      if (attacker.nation === 'ES' && attacker.hp <= attacker.maxHp / 2) dmg += 1;
+      if (attacker.shipId === 'jp_bb1' && hasSix) dmg += 1;
+      if (attacker.shipId === 'us_bb_montana' && angle === 'BROADSIDE') dmg += 1;
+      if (attacker.shipId === 'us_bb4') dmg += 1;
+      if (attacker.shipId === 'it_bb2' && dist >= 5) dmg += 1;
+      if (attacker.shipId === 'fr_bb_alsace' && angle === 'BOW') dmg += 1;
+      if (attacker.shipId === 'fr_bb1' && angle === 'BOW') dmg += 1;
+      if (attacker.shipId === 'su_bb3' && ['CA','CL','DD','SS'].includes(target.type)) dmg += 1;
+      if (attacker.shipId === 'au_ca3' && ['BB','CA'].includes(target.type)) dmg += 1;
+      if (attacker.shipId === 'es_bb1' && angle === 'BROADSIDE') dmg += 1;
+
+      gameState.units.forEach(ally => {
+        if (ally.uid !== attacker.uid && ally.team === attacker.team && ally.hp > 0 && Math.max(Math.abs(ally.x - attacker.x), Math.abs(ally.y - attacker.y)) <= 1) {
+          if (attacker.shipId === 'jp_bb2' && ally.shipId === 'jp_bb1') dmg += 1;
+          if (attacker.shipId === 'de_bb4' && ally.shipId === 'de_bb3') dmg += 1;
+          if (attacker.shipId === 'nl_cl3' && (ally.shipId === 'nl_cl2' || ally.shipId === 'nl_cl1')) dmg += 1;
+        }
+      });
+
+      dmg = applyDamageReduction(target, dmg, 'GUN');
+      target.hp = Math.max(0, target.hp - dmg);
+      addLog(`💥 [主砲斉射] ${attacker.name} → ${target.name} (${angle === 'BROADSIDE' ? '丁字/側面' : '縦陣'}・出目[${rolls.join(',')}]): ${dmg}ダメージ！(残HP:${target.hp})`, 'text-rose-300 font-bold');
+      if (target.hp <= 0) handleUnitSunk(attacker, target);
+    } else {
+      addLog(`💨 [主砲斉射] ${attacker.name} → ${target.name} (出目[${rolls.join(',')}]): 全弾外れ！`, 'text-slate-400');
+    }
+  } else if (weapon === 'TORPEDO') {
+    attacker.torp = Math.max(0, attacker.torp - 1);
+    const wasSubmerged = attacker.type === 'SS' && attacker.submerged;
+    if (wasSubmerged) {
+      const staySubRoll = Math.floor(Math.random() * 6) + 1;
+      if ((attacker.shipId === 'us_ss1' || attacker.shipId === 'de_ss2') && staySubRoll >= 4) {
+        addLog(`🫧 ${attacker.name} は魚雷発射後も潜航状態を維持！`, 'text-cyan-300');
+      } else {
+        attacker.submerged = false;
+        addLog(`⚠️ ${attacker.name} が魚雷発射に伴い海面に浮上！`, 'text-amber-300');
+      }
+    }
+
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    let sum = d1 + d2 + aiHitMod;
+    let needed = dist <= 2 ? 6 : dist === 3 ? 7 : 8;
+    if (attacker.shipId === 'it_ss1' && dist <= 2) needed = 4;
+
+    if (w.includes('スコール') || w.includes('濃霧')) sum += 1;
+    if (w.includes('荒波') && attacker.nation !== 'SU') sum -= 2;
+    if (attacker.nation === 'NL' && (w.includes('夜間') || w.includes('濃霧') || w.includes('スコール'))) sum += 1;
+    if (wasSubmerged) sum += 2;
+    if (attacker.shipId === 'jp_cl_kitakami' || attacker.shipId === 'de_ca2' || attacker.shipId === 'es_dd2' || attacker.shipId === 'nl_dd2') sum += 1;
+    if ((attacker.shipId === 'de_ss1' || attacker.shipId === 'su_dd3' || attacker.shipId === 'au_dd6') && ['BB','CV'].includes(target.type)) sum += 1;
+    if (attacker.shipId === 'it_dd2' && (w.includes('夜間') || w.includes('スコール'))) sum += 1;
+    if (attacker.shipId === 'nl_dd1' && target.cost > attacker.cost) sum += 1;
+
+    if (sum >= needed) {
+      let dmg = attacker.torpDmg || 4;
+      if (attacker.nation === 'JP' && attacker.type === 'DD') dmg += 1;
+      if ((attacker.shipId === 'de_ss1' || attacker.shipId === 'it_ss2' || attacker.shipId === 'su_ss1' || attacker.shipId === 'nl_ss1') && ['BB','CV'].includes(target.type)) dmg += 1;
+      if (attacker.shipId === 'nl_dd3' && (w.includes('夜間') || w.includes('濃霧'))) dmg += 1;
+      if (w.includes('夜間')) dmg += 1;
+      if (w.includes('弾薬庫') && d1 === 6 && d2 === 6) dmg += 3;
+
+      dmg = applyDamageReduction(target, dmg, 'TORPEDO');
+      target.hp = Math.max(0, target.hp - dmg);
+      addLog(`🔱 [魚雷命中!] ${attacker.name} → ${target.name} (2D6=${d1}+${d2}→計${sum}/目標${needed}): ${dmg}ダメージ！(残HP:${target.hp})`, 'text-cyan-300 font-bold');
+      if (target.hp <= 0) handleUnitSunk(attacker, target);
+    } else {
+      addLog(`🌊 [魚雷回避] ${attacker.name} → ${target.name} (2D6=${d1}+${d2}→計${sum}/目標${needed}): 回避された！`, 'text-slate-400');
+    }
+  } else if (weapon === 'DEPTH_CHARGE') {
+    let roll = Math.floor(Math.random() * 6) + 1 + aiHitMod;
+    if (attacker.shipId === 'de_cl2' || attacker.shipId === 'uk_dd2' || attacker.shipId === 'su_cl2' || attacker.shipId === 'au_dd1' || attacker.shipId === 'es_dd3' || attacker.shipId === 'nl_dd4') roll += 1;
+    if (roll >= 4) {
+      target.submerged = false;
+      target.hp = Math.max(0, target.hp - 2);
+      addLog(`💣 [爆雷直撃!] ${attacker.name} → ${target.name} (判定:${roll}): 2ダメージ＆強制浮上！(残HP:${target.hp})`, 'text-amber-300 font-bold');
+      if (target.hp <= 0) handleUnitSunk(attacker, target);
+    } else {
+      addLog(`💦 [爆雷失敗] ${attacker.name} → ${target.name} (判定:${roll}): 潜水艦に逃げられた。`, 'text-slate-400');
+    }
+  } else if (weapon === 'DOGFIGHT') {
+    let roll = Math.floor(Math.random() * 6) + 1 + aiHitMod;
+    let needed = 4;
+    if (['zero','f4u','bf109','spitfire','yak9','boomerang','cw21'].includes(attacker.planeId)) needed = 3;
+    if (['shiden','me155'].includes(attacker.planeId)) needed = 2;
+    if (roll >= needed) {
+      addLog(`✈️ [空戦撃墜!] ${attacker.name} が敵機 ${target.name} を撃墜！(判定:${roll})`, 'text-sky-300 font-bold');
+      removePlaneUnit(target);
+    } else {
+      addLog(`☁️ [空戦] ${attacker.name} と ${target.name} が交戦するも撃墜ならず。(判定:${roll})`, 'text-slate-400');
+    }
+  } else if (weapon === 'AIRSTRIKE') {
+    let aaNeeded = (target.nation === 'US' || target.nation === 'AU' || target.shipId === 'uk_bb_vanguard' || target.shipId === 'uk_bb6' || target.shipId === 'fr_bb2' || target.shipId === 'su_cl1' || target.shipId === 'es_ca2' || target.shipId === 'es_cl4' || target.shipId === 'nl_cl5' || target.shipId === 'nl_dd6') ? 4 : 5;
+    if (target.shipId === 'us_dd2' || target.shipId === 'au_dd5') aaNeeded = 3;
+    if (attacker.planeId === 'swordfish') aaNeeded = 6;
+
+    let aaRoll = Math.floor(Math.random() * 6) + 1;
+    gameState.units.forEach(ally => {
+      if (ally.team === target.team && ally.hp > 0 && !ally.isPlane && Math.max(Math.abs(ally.x - target.x), Math.abs(ally.y - target.y)) <= 2) {
+        if (ally.shipId === 'us_bb3') aaRoll += 1;
+      }
+    });
+
+    if (target.shipId === 'us_cl1' && !target.aaShieldUsed) {
+      target.aaShieldUsed = true;
+      addLog(`🛡️ [防空巡洋艦] ${target.name} の弾幕で ${attacker.name} の攻撃を無効化！`, 'text-sky-300 font-bold');
+      returnPlaneToCarrier(attacker);
+      attacker.acted = true;
+      advanceTurn();
+      return;
+    }
+
+    const immuneFirstAA = attacker.planeId === 'sbd' || attacker.planeId === 'il2' || attacker.planeId === 'seiran';
+    if (!immuneFirstAA && aaRoll >= aaNeeded) {
+      addLog(`🔥 [対空砲火!] ${target.name} の対空砲火が ${attacker.name} を撃墜！(出目:${aaRoll})`, 'text-amber-300 font-bold');
+      removePlaneUnit(attacker);
+      advanceTurn();
+      return;
+    }
+
+    let atkRoll = Math.floor(Math.random() * 6) + 1 + aiHitMod;
+    let atkNeeded = ['suisei','ryusei','ju87','fi167','seiran'].includes(attacker.planeId) ? 3 : 4;
+    if (attacker.parentCvUid) {
+      const cv = gameState.units.find(x => x.uid === attacker.parentCvUid);
+      if (cv && cv.shipId === 'fr_cv2') atkRoll += 1;
+      if (cv && cv.shipId === 'us_cv3' && gameState.round === 1) atkRoll += 1;
+      if (cv && cv.shipId === 'jp_cv1') {
+        const kagaNear = gameState.units.some(x => x.shipId === 'jp_cv2' && x.team === cv.team && x.hp > 0 && Math.max(Math.abs(x.x - cv.x), Math.abs(x.y - cv.y)) <= 1);
+        if (kagaNear) atkRoll += 1;
+      }
+    }
+
+    if (atkRoll >= atkNeeded) {
+      let dmg = attacker.dmg || 3;
+      if ((attacker.planeId === 'tenzan') && ['BB','CV'].includes(target.type)) dmg = 5;
+      if (attacker.parentCvUid) {
+        const cv = gameState.units.find(x => x.uid === attacker.parentCvUid);
+        if (cv && cv.shipId === 'jp_cv2') dmg += 1;
+        if (cv && cv.shipId === 'us_cv3' && gameState.round === 1) dmg += 1;
+        if (cv && cv.shipId === 'uk_cv1') target.rudderDamaged = true;
+      }
+      if (attacker.planeId === 'swordfish') target.rudderDamaged = true;
+
+      dmg = applyDamageReduction(target, dmg, 'AIR');
+      target.hp = Math.max(0, target.hp - dmg);
+      addLog(`💣 [航空攻撃命中!] ${attacker.name} → ${target.name} (判定:${atkRoll}): ${dmg}ダメージ！(残HP:${target.hp})`, 'text-rose-300 font-bold');
+      if (target.hp <= 0) handleUnitSunk(attacker, target);
+    } else {
+      addLog(`💨 [航空攻撃回避] ${attacker.name} の爆撃・雷撃は ${target.name} に回避された。(判定:${atkRoll})`, 'text-slate-400');
+    }
+    returnPlaneToCarrier(attacker);
+  }
+
+  attacker.acted = true;
+  advanceTurn();
+}
+
+function applyDamageReduction(target, rawDmg, sourceType) {
+  let dmg = rawDmg;
+  if (dmg <= 0) return 0;
+
+  if (target.shipId === 'de_bb1' && target.hp <= 5 && !target.bismarckUsed) {
+    target.bismarckUsed = true;
+    addLog(`🛡️ [不沈の伝説] ${target.name} が致命的ダメージを完全無効化！`, 'text-amber-300 font-bold');
+    return 0;
+  }
+
+  if (sourceType === 'GUN') {
+    if (target.nation === 'DE' && ['BB','CA'].includes(target.type)) dmg = Math.max(1, dmg - 1);
+    if (['jp_bb2','jp_cv_shinano','jp_cv4','it_ca1','su_bb1'].includes(target.shipId)) dmg = Math.max(1, dmg - 1);
+    if (target.shipId === 'es_bb3' && target.hp <= 5) dmg = Math.max(1, dmg - 1);
+  }
+  if (sourceType === 'AIR') {
+    if (['jp_cv_shinano','jp_cv5','jp_cv4','uk_cv2'].includes(target.shipId)) dmg = Math.max(1, dmg - 1);
+  }
+  if (target.shipId === 'it_bb4') {
+    const inHome = (target.team === 'A' && target.y <= 5) || (target.team === 'B' && target.y >= 6);
+    if (inHome) dmg = Math.max(1, dmg - 1);
+  }
+  return dmg;
+}
+
+function returnPlaneToCarrier(pl) {
+  const cv = gameState.units.find(u => u.uid === pl.parentCvUid && u.hp > 0);
+  if (cv) {
+    cv.planesRemaining = Math.min(cv.maxPlanes, cv.planesRemaining + 1);
+  }
+  gameState.units = gameState.units.filter(u => u.uid !== pl.uid);
+}
+
+function removePlaneUnit(pl) {
+  if (pl.parentCvUid) {
+    const cv = gameState.units.find(u => u.uid === pl.parentCvUid && u.hp > 0);
+    if (cv && cv.shipId === 'us_cv1' && cv.entRevives > 0) {
+      cv.entRevives--;
+      cv.planesRemaining = Math.min(cv.maxPlanes, cv.planesRemaining + 1);
+      addLog(`🔥 [不死鳥の空母] エンタープライズが失われた艦載機を即時補充！(残補充:${cv.entRevives})`, 'text-sky-300');
+    }
+  }
+  gameState.units = gameState.units.filter(u => u.uid !== pl.uid);
+}
+
+function handleUnitSunk(attacker, target) {
+  target.hp = 0;
+  target.acted = true;
+  addLog(`☠️ 【轟沈】 ${target.name} が撃沈されました！！`, 'text-rose-500 font-black');
+  if (target.type === 'CV' || target.shipId === 'jp_ss_i400') {
+    gameState.units = gameState.units.filter(u => !(u.isPlane && u.parentCvUid === target.uid));
+  }
+  // Immediately purge sunk unit so no ghosts remain
+  gameState.units = gameState.units.filter(u => u.uid !== target.uid && u.hp > 0);
+  if (gameState.selectedUid === target.uid) {
+    gameState.selectedUid = null;
+  }
+  if (!isAnyFortressMode() && gameState.targetVp > 0) {
+    const gain = target.cost;
+    gameState.players.forEach(p => {
+      if (p.team === attacker.team) p.vp += gain;
+    });
+    addLog(`🏅 ${attacker.team}陣営が撃沈ボーナス +${gain}pt を獲得！`, 'text-amber-300 font-bold');
+  }
+}
+
+// ==========================================
+// 5. CARRIER LAUNCH, SUBMERGE & ROTATION ACTIONS
+// ==========================================
+function openLaunchModal(cv) {
+  if (!cv || cv.hp <= 0) return;
+  if (cv.type === 'SS' && cv.submerged) {
+    showBanner('🫧 潜航中は特殊攻撃機『晴嵐』を発艦できません！先に浮上してください。');
+    return;
+  }
+  if (gameState.weather.name.includes('スコール')) {
+    showBanner('🌧️ スコール中は艦載機を発艦できません！');
+    return;
+  }
+  const maxLaunch = cv.shipId === 'jp_cv1' ? 2 : 1;
+  if ((cv.launchedThisTurn || 0) >= maxLaunch) {
+    showBanner('今ターンの発艦上限に達しています！');
+    return;
+  }
+  if (cv.planesRemaining <= 0) {
+    showBanner('搭載機が残っていません！');
+    return;
+  }
+
+  let planes = PLANES_BY_NATION[cv.nation] || PLANES_BY_NATION.JP;
+  if (cv.shipId === 'jp_ss_i400') {
+    planes = planes.filter(p => p.id === 'seiran');
+  } else if (cv.nation === 'JP') {
+    planes = planes.filter(p => p.id !== 'seiran');
+  }
+  const box = document.getElementById('modal-box');
+  let listHtml = '';
+  planes.forEach((pl) => {
+    const realIdx = (PLANES_BY_NATION[cv.nation] || PLANES_BY_NATION.JP).findIndex(x => x.id === pl.id);
+    listHtml += `
+      <button onclick="launchPlane('${cv.uid}', ${realIdx})" class="w-full text-left p-3 bg-slate-800 hover:bg-sky-900/60 border border-slate-600 hover:border-sky-400 rounded-xl transition flex items-center justify-between gap-2">
+        <div>
+          <div class="font-black text-sm text-white">${pl.name} <span class="text-xs text-amber-300">[${pl.role}]</span></div>
+          <div class="text-xs text-slate-300 mt-0.5">${pl.desc}</div>
+        </div>
+        <span class="px-3 py-1.5 bg-sky-600 text-white text-xs font-bold rounded-lg shrink-0">発艦！</span>
+      </button>`;
+  });
+
+  box.innerHTML = `
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-black text-white">🛫 ${cv.name} — 艦載機発艦選択 (残:${cv.planesRemaining}機)</h3>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+    </div>
+    <div class="space-y-2">${listHtml}</div>
+  `;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function launchPlane(cvUid, planeIdx) {
+  closeModal();
+  const cv = gameState.units.find(u => u.uid === cvUid && u.hp > 0);
+  if (!cv || cv.planesRemaining <= 0) return;
+  const templates = PLANES_BY_NATION[cv.nation] || PLANES_BY_NATION.JP;
+  const tmpl = templates[planeIdx];
+  if (!tmpl) return;
+
+  let spawnX = cv.x, spawnY = cv.y;
+  for (let d = 0; d < 8; d++) {
+    const nx = cv.x + DIRS[d].dx;
+    const ny = cv.y + DIRS[d].dy;
+    if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+      if (!gameState.units.some(u => u.hp > 0 && u.isPlane && u.team === cv.team && u.x === nx && u.y === ny)) {
+        spawnX = nx; spawnY = ny;
+        break;
+      }
+    }
+  }
+
+  cv.planesRemaining--;
+  cv.launchedThisTurn = (cv.launchedThisTurn || 0) + 1;
+
+  const newPlane = {
+    uid: `pl_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,
+    ownerId: cv.ownerId,
+    team: cv.team,
+    nation: cv.nation,
+    isPlane: true,
+    parentCvUid: cv.uid,
+    planeId: tmpl.id,
+    role: tmpl.role,
+    name: tmpl.name,
+    type: 'AIR',
+    cost: 0,
+    hp: 1,
+    maxHp: 1,
+    move: tmpl.move,
+    range: 1,
+    guns: 0,
+    torp: 0,
+    dmg: tmpl.dmg,
+    skillName: tmpl.role,
+    skillDesc: tmpl.desc,
+    x: spawnX,
+    y: spawnY,
+    dir: cv.dir,
+    submerged: false,
+    acted: false,
+    movedThisTurn: false,
+    stepsMoved: 0
+  };
+
+  gameState.units.push(newPlane);
+  gameState.selectedUid = newPlane.uid;
+  addLog(`🛫 ${cv.name} から ${tmpl.name} が発艦しました！`, 'text-sky-300 font-bold');
+  renderInspector();
+  renderActionControls();
+  drawCanvas();
+}
+
+function toggleSubmergeSelectedUnit() {
+  const u = gameState.units.find(x => x.uid === gameState.selectedUid && x.hp > 0);
+  if (!u || u.type !== 'SS' || u.acted) return;
+  u.submerged = !u.submerged;
+  u.acted = true;
+  addLog(`${u.submerged ? '🫧' : '⚠️'} ${u.name} が${u.submerged ? '潜航' : '浮上'}しました。`, 'text-cyan-300 font-bold');
+  advanceTurn();
+}
+
+function extraTurnSelectedUnit(delta) {
+  const u = gameState.units.find(x => x.uid === gameState.selectedUid && x.hp > 0);
+  if (!u || u.isPlane || u.acted) return;
+  const p = getCurrentPlayer();
+  if (u.nation === 'UK' && !p.ukTurnUsedThisTurn) {
+    p.ukTurnUsedThisTurn = true;
+    u.dir = (u.dir + delta + 8) % 8;
+    addLog(`🇬🇧 [英国艦隊機動] ${u.name} が45度追加旋回しました。`, 'text-emerald-300');
+  } else if (u.shipId === 'jp_ca1' || u.shipId === 'fr_ca2') {
+    u.dir = (u.dir + delta + 8) % 8;
+    u.acted = true;
+    addLog(`🧭 ${u.name} が追加45度旋回を行いました。`, 'text-sky-300');
+    advanceTurn();
+    return;
+  }
+  renderInspector();
+  renderActionControls();
+  drawCanvas();
+}
+
+function waitSelectedUnit() {
+  const u = gameState.units.find(x => x.uid === gameState.selectedUid && x.hp > 0);
+  if (!u || u.acted) return;
+  u.acted = true;
+  addLog(`⏸️ ${u.name} は現在位置で待機・警戒態勢をとりました。`, 'text-slate-400');
+  advanceTurn();
+}
+
+// ==========================================
+// 6. AI OPPONENT LOGIC (DIFFICULTY AWARE)
+// ==========================================
+function selectAITarget(targets, diffCfg) {
+  if (!targets || targets.length === 0) return null;
+  let pool = [...targets];
+
+  // Difficulty-based torpedo restraint
+  if (diffCfg.torpChance < 1.0) {
+    const filtered = pool.filter(t => t.weapon !== 'TORPEDO' || Math.random() < diffCfg.torpChance);
+    if (filtered.length > 0) {
+      pool = filtered;
+    } else if (pool.every(t => t.weapon === 'TORPEDO')) {
+      return null; // Hold torpedo fire this turn on easier settings
+    }
+  }
+
+  // Focus fire on high-value / low-HP targets vs random target selection
+  if (Math.random() < diffCfg.focusChance) {
+    pool.sort((a, b) => {
+      const scoreA = (a.unit.isFortress ? 100 : a.unit.cost * 10) + (a.unit.hp <= 3 ? 15 : 0);
+      const scoreB = (b.unit.isFortress ? 100 : b.unit.cost * 10) + (b.unit.hp <= 3 ? 15 : 0);
+      return scoreB - scoreA;
+    });
+    return pool[0];
+  } else {
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+}
+
+function runAITurnStep() {
+  if (!gameState || gameState.gameOver) return;
+  gameState.units = gameState.units.filter(u => u.hp > 0);
+  const p = getCurrentPlayer();
+  if (!p || !p.isAI) return;
+
+  const diffCfg = getAiDiffConfig();
+  const readyUnits = gameState.units.filter(u => u.ownerId === p.id && !u.acted && !u.isFortress && u.hp > 0);
+  if (readyUnits.length === 0) {
+    advanceTurn();
+    return;
+  }
+
+  const u = readyUnits[0];
+  gameState.selectedUid = u.uid;
+  updateHUD();
+  renderInspector();
+  drawCanvas();
+
+  // AI Submarine (SS) tactical surface/submerge management
+  if (u.type === 'SS' && u.submerged) {
+    const visibleEnemies = gameState.units.filter(en => !en.isPlane && en.team !== u.team && en.hp > 0 && !en.submerged);
+    const minDistToEnemy = visibleEnemies.length > 0
+      ? Math.min(...visibleEnemies.map(en => Math.max(Math.abs(en.x - u.x), Math.abs(en.y - u.y))))
+      : 99;
+    if (u.torp <= 0 || (u.shipId === 'jp_ss_i400' && u.planesRemaining > 0 && minDistToEnemy <= 7) || minDistToEnemy > getEffectiveTorpRange(u) + 1) {
+      u.submerged = false;
+      addLog(`⚠️ [AI潜航解除] ${u.name} が海面に浮上しました！`, 'text-amber-300');
+    }
+  }
+
+  // Carrier / I-400 aircraft launch decision based on difficulty launchChance
+  if ((u.type === 'CV' || (u.shipId === 'jp_ss_i400' && !u.submerged)) && u.planesRemaining > 0 && !gameState.weather.name.includes('スコール')) {
+    if (Math.random() < diffCfg.launchChance) {
+      const templates = PLANES_BY_NATION[u.nation] || PLANES_BY_NATION.JP;
+      let pickIdx = 0;
+      if (u.shipId === 'jp_ss_i400') {
+        pickIdx = templates.findIndex(t => t.id === 'seiran');
+      } else {
+        const attackPlanes = templates.map((t, i) => ({ t, i })).filter(x => x.t.role !== 'RECON' && x.t.id !== 'seiran');
+        const pick = attackPlanes[Math.floor(Math.random() * attackPlanes.length)] || { i: 0 };
+        pickIdx = pick.i;
+      }
+      launchPlane(u.uid, Math.max(0, pickIdx));
+      u.acted = true;
+      setTimeout(() => runAITurnStep(), Math.max(40, Math.floor(gameState.aiSpeed * 0.8)));
+      return;
+    }
+  }
+
+  // Pre-move attack check
+  let targets = getAttackableTargets(u);
+  const preMoveTarget = selectAITarget(targets, diffCfg);
+  if (preMoveTarget) {
+    executeAttack(u, preMoveTarget);
+    return;
+  }
+
+  // Movement decision (easier AI occasionally holds position or picks suboptimal maneuvers)
+  const shouldMove = Math.random() >= diffCfg.waitChance;
+  const moves = shouldMove ? getValidMoves(u) : [];
+  if (moves.length > 0) {
+    const enemies = gameState.units.filter(en => !en.isPlane && en.team !== u.team && en.hp > 0 && !en.submerged);
+    if (enemies.length > 0) {
+      enemies.sort((a, b) => {
+        if (isSingleFortressMode() && a.isFortress) return -1;
+        if (isSingleFortressMode() && b.isFortress) return 1;
+        if (isDualFortressMode() && a.isFortress) return -1;
+        if (isDualFortressMode() && b.isFortress) return 1;
+        return Math.hypot(a.x - u.x, a.y - u.y) - Math.hypot(b.x - u.x, b.y - u.y);
+      });
+      const goal = (Math.random() < diffCfg.focusChance)
+        ? enemies[0]
+        : enemies[Math.floor(Math.random() * enemies.length)];
+
+      moves.sort((m1, m2) => Math.hypot(m1.x - goal.x, m1.y - goal.y) - Math.hypot(m2.x - goal.x, m2.y - goal.y));
+      let bestMove = moves[0];
+      if (Math.random() >= diffCfg.smartMoveChance && moves.length > 1) {
+        const subPool = moves.slice(0, Math.min(moves.length, 4));
+        bestMove = subPool[Math.floor(Math.random() * subPool.length)];
+      }
+      u.x = bestMove.x;
+      u.y = bestMove.y;
+      u.dir = bestMove.dir;
+      u.movedThisTurn = true;
+      u.stepsMoved = getEffectiveMove(u);
+      addLog(`🤖 ${u.name} が (${u.x + 1}, ${u.y + 1}) へ機動。`, 'text-slate-300');
+    }
+  } else if (!shouldMove) {
+    addLog(`🤖 ${u.name} は現在位置で様子をうかがっている。`, 'text-slate-400');
+  }
+
+  // Post-move attack check
+  targets = getAttackableTargets(u);
+  const postMoveTarget = selectAITarget(targets, diffCfg);
+  if (postMoveTarget) {
+    executeAttack(u, postMoveTarget);
+    return;
+  }
+
+  u.acted = true;
+  advanceTurn();
+}
+
+// ==========================================
+// 7. CANVAS RENDERING & INTERACTION
+// ==========================================
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+let cellSize = 44;
+let boardOffsetX = 0;
+let boardOffsetY = 0;
+
+function resizeCanvas() {
+  const wrapper = document.getElementById('canvas-wrapper');
+  if (!wrapper) return;
+  const w = wrapper.clientWidth;
+  const h = wrapper.clientHeight;
+  canvas.width = w;
+  canvas.height = h;
+  const minDim = Math.min(w - 16, h - 16);
+  cellSize = Math.max(24, Math.floor(minDim / BOARD_SIZE));
+  boardOffsetX = Math.floor((w - cellSize * BOARD_SIZE) / 2);
+  boardOffsetY = Math.floor((h - cellSize * BOARD_SIZE) / 2);
+  drawCanvas();
+}
+
+window.addEventListener('resize', () => {
+  if (gameState) resizeCanvas();
+});
+
+// Top-down realistic naval silhouette renderer
+function drawUnitSilhouette(ctx, u, cx, cy, size, fillColor, strokeColor) {
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  if (u.isFortress) {
+    const r = size * 0.4;
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI / 4) * i + Math.PI / 8;
+      const vx = Math.cos(a) * r;
+      const vy = Math.sin(a) * r;
+      if (i === 0) ctx.moveTo(vx, vy);
+      else ctx.lineTo(vx, vy);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = strokeColor;
+    ctx.stroke();
+
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    const dirRad = (u.dir * Math.PI) / 4;
+    ctx.rotate(dirRad);
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(-3.5, -r * 0.85, 2.2, r * 0.65);
+    ctx.fillRect(1.3, -r * 0.85, 2.2, r * 0.65);
+    ctx.restore();
+    return;
+  }
+
+  const angleRad = (u.dir * Math.PI) / 4;
+  ctx.rotate(angleRad);
+
+  if (u.isPlane) {
+    const s = size * 0.36;
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.45)';
+    ctx.beginPath();
+    ctx.ellipse(3, 5, s * 0.95, s * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = fillColor;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 1.6;
+
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.35);
+    ctx.lineTo(s * 1.05, -s * 0.05);
+    ctx.lineTo(s * 0.95, s * 0.2);
+    ctx.lineTo(0, s * 0.12);
+    ctx.lineTo(-s * 0.95, s * 0.2);
+    ctx.lineTo(-s * 1.05, -s * 0.05);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.95);
+    ctx.lineTo(s * 0.16, -s * 0.3);
+    ctx.lineTo(s * 0.12, s * 0.65);
+    ctx.lineTo(s * 0.42, s * 0.85);
+    ctx.lineTo(0, s * 0.78);
+    ctx.lineTo(-s * 0.42, s * 0.85);
+    ctx.lineTo(-s * 0.12, s * 0.65);
+    ctx.lineTo(-s * 0.16, -s * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#e0f2fe';
+    ctx.beginPath();
+    ctx.ellipse(0, -s * 0.15, s * 0.1, s * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+    return;
+  }
+
+  if (!u.submerged) {
+    ctx.strokeStyle = 'rgba(186, 230, 253, 0.32)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.12, size * 0.36);
+    ctx.lineTo(-size * 0.24, size * 0.48);
+    ctx.moveTo(size * 0.12, size * 0.36);
+    ctx.lineTo(size * 0.24, size * 0.48);
+    ctx.stroke();
+  }
+
+  if (u.type === 'BB') {
+    const L = size * 0.45;
+    const W = size * 0.17;
+    ctx.beginPath();
+    ctx.moveTo(0, -L);
+    ctx.quadraticCurveTo(W * 0.95, -L * 0.45, W, 0);
+    ctx.quadraticCurveTo(W * 0.95, L * 0.75, W * 0.55, L);
+    ctx.lineTo(-W * 0.55, L);
+    ctx.quadraticCurveTo(-W * 0.95, L * 0.75, -W, 0);
+    ctx.quadraticCurveTo(-W * 0.95, -L * 0.45, 0, -L);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = strokeColor;
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-W * 0.45, -L * 0.5, W * 0.9, L * 1.15);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(-W * 0.55, -L * 0.18, W * 1.1, L * 0.38);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(-W * 0.35, -L * 0.52, W * 0.7, L * 0.14);
+    ctx.fillRect(-2.2, -L * 0.72, 1.2, L * 0.22);
+    ctx.fillRect(0, -L * 0.74, 1.2, L * 0.24);
+    ctx.fillRect(2.2, -L * 0.72, 1.2, L * 0.22);
+    ctx.fillRect(-W * 0.35, -L * 0.34, W * 0.7, L * 0.13);
+    ctx.fillRect(-W * 0.35, L * 0.36, W * 0.7, L * 0.14);
+    ctx.fillRect(-1.8, L * 0.5, 1.2, L * 0.22);
+    ctx.fillRect(0.6, L * 0.5, 1.2, L * 0.22);
+
+  } else if (u.type === 'CV') {
+    const L = size * 0.45;
+    const W = size * 0.2;
+    ctx.beginPath();
+    ctx.moveTo(-W * 0.75, -L);
+    ctx.lineTo(W * 0.75, -L);
+    ctx.lineTo(W, -L * 0.55);
+    ctx.lineTo(W, L * 0.85);
+    ctx.lineTo(W * 0.7, L);
+    ctx.lineTo(-W * 0.7, L);
+    ctx.lineTo(-W, L * 0.85);
+    ctx.lineTo(-W, -L * 0.55);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = strokeColor;
+    ctx.stroke();
+
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(-W * 0.72, -L * 0.92, W * 1.44, L * 1.84);
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, -L * 0.88);
+    ctx.lineTo(0, L * 0.88);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(W * 0.42, -L * 0.22, W * 0.38, L * 0.36);
+
+  } else if (u.type === 'CA' || u.type === 'CL') {
+    const L = size * 0.43;
+    const W = u.type === 'CA' ? size * 0.13 : size * 0.11;
+    ctx.beginPath();
+    ctx.moveTo(0, -L);
+    ctx.quadraticCurveTo(W, -L * 0.35, W, L * 0.25);
+    ctx.lineTo(W * 0.65, L);
+    ctx.lineTo(-W * 0.65, L);
+    ctx.lineTo(-W, L * 0.25);
+    ctx.quadraticCurveTo(-W, -L * 0.35, 0, -L);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.lineWidth = 1.7;
+    ctx.strokeStyle = strokeColor;
+    ctx.stroke();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(-W * 0.55, -L * 0.22, W * 1.1, L * 0.45);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(-W * 0.38, -L * 0.52, W * 0.76, L * 0.14);
+    ctx.fillRect(-1.5, -L * 0.72, 1.1, L * 0.2);
+    ctx.fillRect(0.6, -L * 0.72, 1.1, L * 0.2);
+    ctx.fillRect(-W * 0.38, L * 0.4, W * 0.76, L * 0.14);
+    ctx.fillRect(-1.5, L * 0.54, 1.1, L * 0.2);
+    ctx.fillRect(0.6, L * 0.54, 1.1, L * 0.2);
+
+  } else if (u.type === 'DD') {
+    const L = size * 0.39;
+    const W = size * 0.095;
+    ctx.beginPath();
+    ctx.moveTo(0, -L);
+    ctx.quadraticCurveTo(W * 1.1, -L * 0.2, W * 0.85, L * 0.7);
+    ctx.lineTo(W * 0.5, L);
+    ctx.lineTo(-W * 0.5, L);
+    ctx.lineTo(-W * 0.85, L * 0.7);
+    ctx.quadraticCurveTo(-W * 1.1, -L * 0.2, 0, -L);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = strokeColor;
+    ctx.stroke();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(-W * 0.55, -L * 0.3, W * 1.1, L * 0.22);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(-W * 0.65, L * 0.05, W * 1.3, L * 0.16);
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(-1, -L * 0.68, 2, L * 0.22);
+
+  } else if (u.type === 'SS') {
+    const L = size * 0.38;
+    const W = size * 0.085;
+    if (u.submerged) {
+      ctx.strokeStyle = 'rgba(34, 211, 238, 0.55)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(0, 0, L * 0.9, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.ellipse(0, 0, W, L, 0, 0, Math.PI * 2);
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = strokeColor;
+    ctx.stroke();
+
+    // I-400 submarine carrier hangar deck detail
+    if (u.shipId === 'jp_ss_i400') {
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(-W * 0.45, -L * 0.55, W * 0.9, L * 0.45);
+    }
+
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.ellipse(0, -L * 0.08, W * 0.55, L * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#67e8f9';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawCanvas() {
+  if (!gameState) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const selectedUnit = gameState.units.find(u => u.uid === gameState.selectedUid && u.hp > 0);
+  const currentPlayer = getCurrentPlayer();
+  const canControl = selectedUnit && !currentPlayer.isAI && selectedUnit.ownerId === currentPlayer.id && !selectedUnit.acted && !selectedUnit.isFortress;
+
+  const validMoves = (canControl && !selectedUnit.movedThisTurn) ? getStepMoveOptions(selectedUnit) : [];
+  const attackables = canControl ? getAttackableTargets(selectedUnit) : [];
+
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const px = boardOffsetX + c * cellSize;
+      const py = boardOffsetY + r * cellSize;
+      const cell = gameState.grid[r][c];
+
+      ctx.fillStyle = cell === 1 ? '#14532d' : cell === 2 ? '#0e7490' : cell === 3 ? '#1e3a8a' : '#0f172a';
+      ctx.fillRect(px, py, cellSize, cellSize);
+
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px, py, cellSize, cellSize);
+
+      if (cell === 1) {
+        ctx.fillStyle = '#4ade80';
+        ctx.font = `bold ${Math.floor(cellSize * 0.42)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🏝️', px + cellSize / 2, py + cellSize / 2);
+      } else if (cell === 2) {
+        ctx.fillStyle = 'rgba(103, 232, 249, 0.35)';
+        ctx.font = `bold ${Math.floor(cellSize * 0.24)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('浅瀬', px + cellSize / 2, py + cellSize / 2);
+      } else if (cell === 3) {
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = `bold ${Math.floor(cellSize * 0.36)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('★', px + cellSize / 2, py + cellSize / 2);
+      }
+    }
+  }
+
+  validMoves.forEach(m => {
+    const px = boardOffsetX + m.x * cellSize;
+    const py = boardOffsetY + m.y * cellSize;
+    ctx.fillStyle = m.isReverse ? 'rgba(250, 204, 21, 0.28)' : 'rgba(56, 189, 248, 0.32)';
+    ctx.fillRect(px + 2, py + 2, cellSize - 4, cellSize - 4);
+    ctx.strokeStyle = m.isReverse ? '#facc15' : '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(px + 2, py + 2, cellSize - 4, cellSize - 4);
+
+    ctx.fillStyle = m.isReverse ? '#fef08a' : 'rgba(224, 242, 254, 0.85)';
+    ctx.font = `bold ${Math.max(10, Math.floor(cellSize * 0.26))}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(m.isReverse ? '後退' : DIRS[m.dir].icon, px + cellSize / 2, py + cellSize / 2);
+  });
+
+  attackables.forEach(a => {
+    const px = boardOffsetX + a.unit.x * cellSize;
+    const py = boardOffsetY + a.unit.y * cellSize;
+    ctx.fillStyle = 'rgba(244, 63, 94, 0.34)';
+    ctx.fillRect(px + 2, py + 2, cellSize - 4, cellSize - 4);
+    ctx.strokeStyle = '#f43f5e';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(px + 2, py + 2, cellSize - 4, cellSize - 4);
+  });
+
+  const sortedUnits = [...gameState.units].sort((a, b) => (a.isPlane === b.isPlane ? 0 : a.isPlane ? 1 : -1));
+  sortedUnits.forEach(u => {
+    if (u.hp <= 0) return;
+    if (u.submerged && !currentPlayer.isAI && u.team !== currentPlayer.team) return;
+
+    const cx = boardOffsetX + u.x * cellSize + cellSize / 2;
+    const cy = boardOffsetY + u.y * cellSize + cellSize / 2;
+    const nat = NATIONS[u.nation] || NATIONS.JP;
+
+    ctx.save();
+    if (u.submerged) ctx.globalAlpha = 0.58;
+
+    if (selectedUnit && selectedUnit.uid === u.uid) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, cellSize * 0.45, 0, Math.PI * 2);
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    const fillColor = u.acted ? '#475569' : nat.color;
+    const strokeColor = u.team === 'A' ? '#93c5fd' : u.team === 'B' ? '#fda4af' : '#fde047';
+    drawUnitSilhouette(ctx, u, cx, u.isPlane ? cy - cellSize * 0.1 : cy, cellSize, fillColor, strokeColor);
+
+    const shortName = u.name.replace(/\s*\(.*?\)/g, '').slice(0, 6);
+    const fontSize = Math.max(9, Math.floor(cellSize * (shortName.length >= 5 ? 0.2 : 0.23)));
+    ctx.font = `900 ${fontSize}px 'Noto Sans JP', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#020617';
+    const labelY = boardOffsetY + (u.y + 1) * cellSize - 13;
+    ctx.strokeText(shortName, cx, labelY);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(shortName, cx, labelY);
+
+    const barW = cellSize * 0.74;
+    const barH = 3.5;
+    const bx = cx - barW / 2;
+    const by = boardOffsetY + (u.y + 1) * cellSize - 6;
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(bx, by, barW, barH);
+    const hpRatio = Math.max(0, u.hp / u.maxHp);
+    ctx.fillStyle = hpRatio > 0.5 ? '#22c55e' : hpRatio > 0.25 ? '#eab308' : '#ef4444';
+    ctx.fillRect(bx, by, barW * hpRatio, barH);
+
+    ctx.restore();
+  });
+}
+
+function openWeaponChoiceModal(attacker, options) {
+  const box = document.getElementById('modal-box');
+  let btns = '';
+  options.forEach((opt, idx) => {
+    btns += `
+      <button onclick="selectWeaponChoice(${idx})" class="w-full text-left p-3 bg-slate-800 hover:bg-rose-950/70 border border-slate-600 hover:border-rose-400 rounded-xl transition flex items-center justify-between">
+        <span class="font-black text-sm text-white">${opt.label}</span>
+        <span class="px-3 py-1 bg-rose-600 text-white text-xs font-bold rounded-lg">発射！</span>
+      </button>`;
+  });
+  window._pendingWeaponOptions = { attacker, options };
+  box.innerHTML = `
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-base font-black text-white">🎯 ${attacker.name} → ${options[0].unit.name}：攻撃兵装を選択</h3>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+    </div>
+    <div class="space-y-2">${btns}</div>
+  `;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function selectWeaponChoice(idx) {
+  const pending = window._pendingWeaponOptions;
+  closeModal();
+  if (pending && pending.options[idx]) {
+    executeAttack(pending.attacker, pending.options[idx]);
+  }
+}
+
+canvas.addEventListener('click', (e) => {
+  if (!gameState || gameState.gameOver) return;
+  const currentPlayer = getCurrentPlayer();
+  if (currentPlayer.isAI) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const gx = Math.floor((mx - boardOffsetX) / cellSize);
+  const gy = Math.floor((my - boardOffsetY) / cellSize);
+  if (gx < 0 || gx >= BOARD_SIZE || gy < 0 || gy >= BOARD_SIZE) return;
+
+  const selectedUnit = gameState.units.find(u => u.uid === gameState.selectedUid && u.hp > 0);
+
+  if (selectedUnit && selectedUnit.ownerId === currentPlayer.id && !selectedUnit.acted && !selectedUnit.isFortress) {
+    const matchingAttacks = getAttackableTargets(selectedUnit).filter(a => a.unit.x === gx && a.unit.y === gy);
+    if (matchingAttacks.length > 0) {
+      if (matchingAttacks.length === 1) {
+        executeAttack(selectedUnit, matchingAttacks[0]);
+      } else {
+        openWeaponChoiceModal(selectedUnit, matchingAttacks);
+      }
+      return;
+    }
+
+    if (!selectedUnit.movedThisTurn) {
+      const moveOpt = getStepMoveOptions(selectedUnit).find(m => m.x === gx && m.y === gy);
+      if (moveOpt) {
+        executeMove(selectedUnit, moveOpt);
+        return;
+      }
+    }
+  }
+
+  const unitsHere = gameState.units.filter(u => u.x === gx && u.y === gy && u.hp > 0);
+  const visibleHere = unitsHere.filter(u => !(u.submerged && u.team !== currentPlayer.team));
+  if (visibleHere.length > 0) {
+    const ownReady = visibleHere.find(u => u.ownerId === currentPlayer.id && !u.acted && !u.isFortress);
+    const chosen = ownReady || visibleHere[0];
+    gameState.selectedUid = chosen.uid;
+    renderInspector();
+    renderActionControls();
+    drawCanvas();
+  }
+});
+
+// ==========================================
+// 8. HUD, INSPECTOR, LOG & MODALS
+// ==========================================
+function updateHUD() {
+  if (!gameState) return;
+  const roundLabel = gameState.maxRounds > 0 ? `R${gameState.round} / ${gameState.maxRounds}` : `R${gameState.round} / ∞`;
+  document.getElementById('hud-round').textContent = roundLabel;
+  document.getElementById('hud-weather').textContent = gameState.weather.name;
+
+  const p = getCurrentPlayer();
+  const turnEl = document.getElementById('hud-turn');
+  turnEl.textContent = `${p.name} のターン`;
+  turnEl.className = `px-2.5 py-1 rounded-lg text-xs font-black text-white ${p.team === 'A' ? 'bg-blue-600' : p.team === 'B' ? 'bg-rose-600' : 'bg-emerald-600'}`;
+
+  const diffBtn = document.getElementById('hud-ai-diff-btn');
+  if (diffBtn) {
+    const diffCfg = getAiDiffConfig(gameState.aiDifficulty);
+    diffBtn.textContent = diffCfg.hudLabel;
+  }
+
+  const speedBtn = document.getElementById('hud-ai-speed-btn');
+  if (speedBtn) {
+    const spd = gameState.aiSpeed;
+    speedBtn.textContent = spd >= 800 ? '🐢 AI速度:ゆっくり' : spd >= 400 ? '▶️ AI速度:標準' : spd >= 150 ? '⚡ AI速度:高速' : '🚀 AI速度:超高速';
+  }
+
+  const scoresEl = document.getElementById('hud-scores');
+  if (isAnyFortressMode()) {
+    const nHq = gameState.units.find(u => u.uid === 'fortress_north');
+    const sHq = gameState.units.find(u => u.uid === 'fortress_south');
+    let hqHtml = `<span class="px-2 py-0.5 bg-blue-950 border border-blue-600 text-blue-200 rounded">🏰 北要塞 HP: ${nHq ? nHq.hp : 0}/25</span>`;
+    if (sHq) {
+      hqHtml += `<span class="px-2 py-0.5 bg-rose-950 border border-rose-600 text-rose-200 rounded">🏯 南要塞 HP: ${sHq.hp}/25</span>`;
+    }
+    scoresEl.innerHTML = hqHtml;
+  } else {
+    let vpHtml = '';
+    gameState.players.forEach(pl => {
+      vpHtml += `<span class="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-200">${pl.name}: <strong class="text-amber-300">${pl.vp}pt</strong></span>`;
+    });
+    scoresEl.innerHTML = vpHtml;
+  }
+}
+
+function cycleAiDifficulty() {
+  if (!gameState) return;
+  const idx = AI_DIFFICULTY_ORDER.indexOf(gameState.aiDifficulty);
+  const next = AI_DIFFICULTY_ORDER[(idx + 1) % AI_DIFFICULTY_ORDER.length];
+  gameState.aiDifficulty = next;
+  setupState.aiDifficulty = next;
+
+  const sel = document.getElementById('ai-difficulty-select');
+  if (sel) sel.value = next;
+  const diffDescEl = document.getElementById('ai-difficulty-desc');
+  if (diffDescEl) diffDescEl.innerHTML = getAiDiffConfig(next).desc;
+
+  updateHUD();
+  const cfg = getAiDiffConfig(next);
+  addLog(`🎚️ 敵(AI)の強さを「${cfg.label}」に変更しました。`, 'text-rose-300 font-bold');
+  showBanner(`敵(AI)の強さを「${cfg.label}」に変更しました`);
+}
+
+function cycleAiSpeed() {
+  if (!gameState) return;
+  const order = [950, 500, 200, 40];
+  const idx = order.indexOf(gameState.aiSpeed);
+  const next = order[(idx + 1) % order.length];
+  gameState.aiSpeed = next;
+  setupState.aiSpeed = next;
+  const sel = document.getElementById('ai-speed-select');
+  if (sel) sel.value = String(next);
+  updateHUD();
+  const label = next >= 800 ? '🐢 ゆっくり' : next >= 400 ? '▶️ 標準' : next >= 150 ? '⚡ 高速' : '🚀 超高速';
+  showBanner(`敵(AI)のターン速度を「${label}」に変更しました`);
+}
+
+function renderInspector() {
+  const el = document.getElementById('unit-inspector');
+  const u = gameState ? gameState.units.find(x => x.uid === gameState.selectedUid && x.hp > 0) : null;
+  if (!u) {
+    el.innerHTML = '<div class="text-xs text-slate-400 text-center py-6">盤面の艦船または艦載機をクリックして詳細を表示</div>';
+    return;
+  }
+  const nat = NATIONS[u.nation];
+  const owner = gameState.players.find(p => p.id === u.ownerId);
+  const maxMove = getEffectiveMove(u);
+  const remMove = Math.max(0, maxMove - (u.stepsMoved || 0));
+  el.innerHTML = `
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="px-1.5 py-0.5 bg-slate-800 text-amber-300 font-black rounded text-[11px]">${u.type}</span>
+          <span class="font-black text-base text-white ml-1">${u.name}</span>
+        </div>
+        <span class="text-xs font-bold text-slate-300">${nat.name} / ${owner ? owner.name : ''}</span>
+      </div>
+      <div class="grid grid-cols-4 gap-1.5 bg-slate-950 border border-slate-800 rounded-xl p-2 text-center text-xs">
+        <div><div class="text-[10px] text-slate-400">耐久HP</div><div class="font-black text-emerald-400">${u.hp}/${u.maxHp}</div></div>
+        <div><div class="text-[10px] text-slate-400">残移動力</div><div class="font-black text-sky-400">${remMove}/${maxMove}</div></div>
+        <div><div class="text-[10px] text-slate-400">主砲射程</div><div class="font-black text-amber-300">${getEffectiveRange(u)}</div></div>
+        <div><div class="text-[10px] text-slate-400">魚雷残弾</div><div class="font-black text-cyan-300">${u.torp || 0}</div></div>
+      </div>
+      <div class="text-[11px] bg-slate-950/80 border border-slate-800 rounded-lg p-2 text-slate-300">
+        <div class="font-bold text-amber-200">【${u.skillName}】</div>
+        <div class="mt-0.5 leading-relaxed">${u.skillDesc}</div>
+        ${u.submerged ? '<div class="mt-1 text-cyan-300 font-bold">🫧 現在：潜航中（砲撃・航空攻撃無効 / 奇襲魚雷命中+2）</div>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderActionControls() {
+  const el = document.getElementById('action-controls');
+  const hint = document.getElementById('phase-hint');
+  const p = getCurrentPlayer();
+  const u = gameState ? gameState.units.find(x => x.uid === gameState.selectedUid && x.hp > 0) : null;
+
+  if (!u || p.isAI || u.ownerId !== p.id || u.acted || u.isFortress) {
+    const diffCfg = getAiDiffConfig(gameState ? gameState.aiDifficulty : 'normal');
+    hint.textContent = p && p.isAI ? `🤖 AI思考中 (${diffCfg.label})...` : '自軍の未行動ユニットを選択';
+    el.innerHTML = `<button onclick="advanceTurn()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 rounded-lg">⏭️ 次のユニットへ</button>`;
+    return;
+  }
+
+  const remMove = Math.max(0, getEffectiveMove(u) - (u.stepsMoved || 0));
+  hint.textContent = remMove > 0 ? `水色:前進 / 黄色:1マス後退 (残${remMove}歩)` : '移動完了！攻撃対象をクリック / または待機';
+  let btns = '';
+
+  if (u.type === 'CV' || u.shipId === 'jp_ss_i400') {
+    btns += `<button onclick="openLaunchModal(gameState.units.find(x=>x.uid==='${u.uid}'))" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-xs font-black text-white rounded-lg">🛫 ${u.shipId === 'jp_ss_i400' ? '晴嵐発艦' : '艦載機発艦'} (${u.planesRemaining}/${u.maxPlanes})</button>`;
+  }
+
+  if (u.type === 'SS') {
+    btns += `<button onclick="toggleSubmergeSelectedUnit()" class="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 text-xs font-black text-white rounded-lg">${u.submerged ? '⚠️ 浮上する' : '🫧 再潜航する'}</button>`;
+  }
+
+  if (!u.isPlane && ((u.nation === 'UK' && !p.ukTurnUsedThisTurn) || u.shipId === 'jp_ca1' || u.shipId === 'fr_ca2')) {
+    btns += `<button onclick="extraTurnSelectedUnit(-1)" class="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-xs font-bold text-white rounded-lg">↺ 左旋回</button>`;
+    btns += `<button onclick="extraTurnSelectedUnit(1)" class="px-2.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-xs font-bold text-white rounded-lg">↻ 右旋回</button>`;
+  }
+
+  btns += `<button onclick="waitSelectedUnit()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-bold text-white rounded-lg">⏸️ 行動終了 / 待機</button>`;
+  el.innerHTML = btns;
+}
+
+function addLog(msg, colorClass = 'text-slate-300') {
+  const logEl = document.getElementById('battle-log');
+  if (!logEl) return;
+  const line = document.createElement('div');
+  line.className = `${colorClass} border-b border-slate-900 pb-1 leading-snug`;
+  line.textContent = msg;
+  logEl.insertBefore(line, logEl.firstChild);
+}
+
+function showBanner(msg) {
+  const el = document.getElementById('banner-msg');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  clearTimeout(window._bannerTimer);
+  window._bannerTimer = setTimeout(() => el.classList.add('hidden'), 2600);
+}
+
+function openRulesModal() {
+  const box = document.getElementById('modal-box');
+  box.innerHTML = `
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-black text-amber-300">📖 大艦巨砲タクティクス クイックルール</h3>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+    </div>
+    <div class="space-y-2.5 text-xs text-slate-300 leading-relaxed">
+      <p><strong class="text-white">1. 1マスずつの操艦移動＆後退：</strong>水色のマスをクリックすると1歩ずつ前進・45度旋回します。艦尾の黄色マスをクリックすると向きを変えずに1マス後退できます。</p>
+      <p><strong class="text-white">2. 丁字戦法（側面攻撃）：</strong>敵艦の真横（ブロードサイド）から主砲を撃ち込むと、ダメージが <strong class="text-amber-300">+1</strong> されます。</p>
+      <p><strong class="text-white">3. 魚雷攻撃（2D6判定）：</strong>射程4マス（日本DD・伊19・伊400は5マス）。2マスで6+、3マスで7+、4マス以上で8+で命中し大ダメージを与えます。</p>
+      <p><strong class="text-white">4. 潜水艦(SS)＆伊400『晴嵐』：</strong>潜航中は砲撃・航空攻撃を受けず、奇襲魚雷の命中が+2されます。伊400は浮上中に特殊攻撃機『晴嵐』を発艦できます。</p>
+      <p><strong class="text-white">5. 空母と艦載機：</strong>「艦載機発艦」で出撃させ、敵艦に隣接して爆撃・雷撃を行います。攻撃後およびラウンド終了時に母艦へ帰還します。</p>
+      <p><strong class="text-white">6. AIの強さ調節：</strong>「入門・控えめ・標準・最強・鬼神」の5段階でAIの命中補正・発艦率・集中砲火頻度をいつでも変更できます。</p>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function showGameOverModal(title, desc) {
+  const box = document.getElementById('modal-box');
+  box.innerHTML = `
+    <div class="text-center space-y-4 py-3">
+      <div class="text-2xl sm:text-3xl font-black text-amber-300">${title}</div>
+      <p class="text-sm text-slate-200 leading-relaxed">${desc}</p>
+      <div class="flex justify-center gap-3 pt-2">
+        <button onclick="closeModal(); returnToSetup();" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-black rounded-xl text-sm">⚓ 艦隊編成に戻る</button>
+        <button onclick="closeModal();" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-sm">盤面を見る</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+function returnToSetup() {
+  gameState = null;
+  document.getElementById('game-screen').classList.add('hidden');
+  document.getElementById('setup-screen').classList.remove('hidden');
+  renderSetupPanels();
+}
+
+// Initialize setup screen on load
+renderSetupPanels();
+</script>
+</body>
+</html>
